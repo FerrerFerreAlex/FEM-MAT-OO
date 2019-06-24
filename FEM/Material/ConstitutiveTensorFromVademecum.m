@@ -7,6 +7,11 @@ classdef ConstitutiveTensorFromVademecum < VariableFromVademecum
     
     methods (Access = public)
         
+        function obj = ConstitutiveTensorFromVademecum(cParams)
+            obj.init(cParams);
+            obj.obtainValues();            
+        end
+        
         function [C,dC] = compute(obj,x)
             obj.computeParamsInfo(x);    
             obj.setValuesToInterpolator(x);

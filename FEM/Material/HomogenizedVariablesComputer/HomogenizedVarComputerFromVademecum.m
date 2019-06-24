@@ -5,29 +5,39 @@ classdef HomogenizedVarComputerFromVademecum ...
         Ctensor
         density
         Ptensor
+        PtensorVector        
+        Cref
+        dCref        
+        Pref
+        dPref   
+        PrefVector
+        dPrefVector
+        monomials
+        RepsV
     end
     
     properties (Access = private)
        Reps      
-       RepsV
        Rsig
        RsigV
-       Cref
-       dCref
+       %Cref
+       %dCref
        rotator
-       Pref
-       dPref
+       %Pref
+       %dPref
     end
     
     methods (Access = public)
         
         function obj = HomogenizedVarComputerFromVademecum(cParams)
-            s.fileName = [cParams.fileName,'WithAmplificators'];
+            s = cParams.vademecumVariablesLoaderSettings;
             v = VademecumVariablesLoader(s);
             v.load();
             obj.Ctensor = v.Ctensor;
             obj.Ptensor = v.Ptensor;
             obj.density = v.density;
+            obj.monomials = v.monomials;
+            obj.PtensorVector = v.PtensorVector;
             obj.computeSymbolicRotationMatrix();
             obj.designVariable = cParams.designVariable;
             obj.rotator = ConstitutiveTensorRotator();            
@@ -44,6 +54,10 @@ classdef HomogenizedVarComputerFromVademecum ...
             obj.computeRsigMatrix();
             obj.rotateAmplificatorTensor();            
         end
+        
+        function computePtensorVector(obj,x)
+            obj.obtainReferenceAmplificatorTensorVector(x);                      
+        end        
         
         function computeDensity(obj,x)
             mx = x(:,1);
@@ -71,7 +85,15 @@ classdef HomogenizedVarComputerFromVademecum ...
             [p,dp] = obj.Ptensor.compute([mx,my]);
             obj.Pref  = p;
             obj.dPref = permute(dp,[1 2 4 3]);            
-        end                
+        end    
+        
+        function obtainReferenceAmplificatorTensorVector(obj,x)
+            mx = x(:,1);
+            my = x(:,2);
+            [p,dp] = obj.PtensorVector.compute([mx,my]);
+            obj.PrefVector  = p;
+            obj.dPrefVector = permute(dp,[1 3 2]);            
+        end             
         
         function computeRepsMatrix(obj)
             Rsym = obj.Reps;

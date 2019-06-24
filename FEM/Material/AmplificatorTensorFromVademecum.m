@@ -10,6 +10,11 @@ classdef AmplificatorTensorFromVademecum < VariableFromVademecum
     end
     
     methods (Access = public)
+
+        function obj = AmplificatorTensorFromVademecum(cParams)
+            obj.init(cParams);
+            obj.obtainValues();
+        end
         
         function [P,dP] = compute(obj,x)
             obj.computeParamsInfo(x);
@@ -62,7 +67,12 @@ classdef AmplificatorTensorFromVademecum < VariableFromVademecum
             for i = 1:nstre
                 for j = 1:nstre
                     k = obj.voigt2TensorWithMonomials(i,j);
-                    P(i,j) = Pv(k);
+                    if i ~= j
+                        factor = 0.5;
+                    else
+                        factor = 1;
+                    end
+                    P(i,j) = factor*Pv(k);
                 end
             end
         end

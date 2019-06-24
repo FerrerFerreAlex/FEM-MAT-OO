@@ -20,7 +20,8 @@ classdef ShFunWithElasticPdes < ShapeFunctional
             for i = 1:1
                 obj.updateHomogenizedMaterialProperties();
                 obj.solvePDEs();
-                obj.updateAlpha();
+                obj.updateAlpha();               
+                obj.updateHomogenizedMaterialProperties();                
             end
             obj.computeFunctionValue();
             obj.computeGradient();

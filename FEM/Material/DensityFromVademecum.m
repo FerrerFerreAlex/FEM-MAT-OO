@@ -5,6 +5,11 @@ classdef DensityFromVademecum < VariableFromVademecum
    end    
     
     methods (Access = public)
+        
+        function obj = DensityFromVademecum(cParams)
+            obj.init(cParams);
+            obj.obtainValues();            
+        end
                 
         function [rho,drho] = compute(obj,x)
             obj.computeParamsInfo(x);    

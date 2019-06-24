@@ -27,7 +27,7 @@ classdef VademecumAmplificatorAdder < handle
     methods (Access = private)
         
         function init(obj)
-            obj.fileName        = 'Rectangle';
+            obj.fileName        = 'SmoothRectangle';
             obj.fileNameReduced = [obj.fileName,'Reduced'];
             obj.fullFileName        = obj.obtainFullFileName(obj.fileName);  
             obj.fullFileNameReduced = obj.obtainFullFileName(obj.fileNameReduced);  

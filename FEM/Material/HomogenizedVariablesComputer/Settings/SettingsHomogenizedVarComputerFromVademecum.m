@@ -8,6 +8,7 @@ classdef SettingsHomogenizedVarComputerFromVademecum < ....
     properties (Access = public)
         fileName
         nelem
+        vademecumVariablesLoaderSettings
     end
     
     methods (Access = public)

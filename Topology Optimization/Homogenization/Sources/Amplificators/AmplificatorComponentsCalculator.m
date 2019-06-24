@@ -2,7 +2,7 @@ classdef AmplificatorComponentsCalculator < handle
     
     properties (SetAccess = private, GetAccess = public)
         Phomog
-        monom        
+        monom
     end
     
     properties (Access = private)
@@ -11,10 +11,12 @@ classdef AmplificatorComponentsCalculator < handle
         nQuadStre
         monomCoef
         nMonom
-        pExp     
-        PcoefHomog    
+        pExp
+        PcoefHomog
         tstress
         Chomog
+        Psquare
+        PsquareVector        
     end
     
     methods (Access = public)
@@ -26,8 +28,11 @@ classdef AmplificatorComponentsCalculator < handle
         function compute(obj)
             obj.computeQuadStressComponents();
             obj.computeMonomials();
-            obj.computeMonomialsCoeficients()
+            obj.computeMonomialsCoeficients();
+            obj.computePtensorSquare();
+            obj.transformPmatrixInVector            
             obj.integratePtensor();
+            %obj.integratePtensor2();
             obj.computePtensorWithCoef();
         end
         
@@ -56,7 +61,7 @@ classdef AmplificatorComponentsCalculator < handle
         
         function computeMonomialsCoeficients(obj)
             a = obj.monom;
-            p = obj.pExp;            
+            p = obj.pExp;
             ncoefs = size(a,1);
             coef = zeros(ncoefs,1);
             for icoef = 1:ncoefs
@@ -73,7 +78,69 @@ classdef AmplificatorComponentsCalculator < handle
             obj.nQuadStre = n;
         end
         
+        function computePtensorSquare(obj)
+            nstre = obj.integrationDB.nstre;
+            ngaus = obj.integrationDB.ngaus;
+            Pt    = obj.computePtensor();            
+            P2 = zeros(size(Pt));
+            for igaus = 1:ngaus
+                for istre = 1:nstre
+                    for jstre = 1:nstre
+                        for kstre = 1:nstre
+                            Pki = squeeze(Pt(kstre,igaus,istre,:));
+                            Pkj = squeeze(Pt(kstre,igaus,jstre,:));
+                            P2v  = squeeze(P2(istre,igaus,jstre,:));
+                            P2(istre,igaus,jstre,:) = P2v + Pki.*Pkj;
+                        end
+                    end
+                end
+            end            
+            obj.Psquare = P2;
+        end
+        
+        function transformPmatrixInVector(obj)
+            PsM   = obj.Psquare;            
+            nelem = size(PsM,4);
+            ngaus = obj.integrationDB.ngaus;
+            ns    = obj.nQuadStre;
+            PsV   = zeros(ns,ngaus,nelem);
+            for s = 1:obj.nQuadStre
+                [istre,jstre] = obj.indexVoigt2tensor(s);
+                if s <= 3
+                    factor = 1;
+                else 
+                    factor = 2;
+                end
+                Pij = squeeze(PsM(istre,:,jstre,:));
+                PsV(s,:,:) = factor*Pij;
+            end
+            obj.PsquareVector = PsV;
+        end
+        
         function integratePtensor(obj)
+            V     = obj.integrationDB.V;
+            dV    = obj.integrationDB.dV;
+            ngaus = obj.integrationDB.ngaus;
+            Pt    = obj.PsquareVector();
+            
+            P = zeros(obj.nMonom,1);
+            for t = 1:obj.nMonom
+                integrand = 0;
+                for igaus = 1:ngaus
+                    integrandG = ones(size(Pt,4),1);
+                    for s = 1:obj.nQuadStre
+                        alpha = obj.monom(t,s);
+                        P2 = squeeze(Pt(s,igaus,:));
+                        integrandG = integrandG.*(P2.^alpha);
+                    end
+                    integrand = integrand + 1/V*integrandG'*dV(:,igaus);
+                end
+                P(t) = integrand;
+            end
+            obj.Phomog = P;            
+        end
+        
+        function integratePtensor2(obj)
             nstre = obj.integrationDB.nstre;
             V     = obj.integrationDB.V;
             dV    = obj.integrationDB.dV;
@@ -82,7 +149,7 @@ classdef AmplificatorComponentsCalculator < handle
             
             P = zeros(obj.nMonom,1);
             for t = 1:obj.nMonom
-                integrand = 0;                
+                integrand = 0;
                 for igaus = 1:ngaus
                     integrandG = ones(size(Pt,4),1);
                     for s = 1:obj.nQuadStre
@@ -92,14 +159,14 @@ classdef AmplificatorComponentsCalculator < handle
                             Pki = squeeze(Pt(kstre,igaus,istre,:));
                             Pkj = squeeze(Pt(kstre,igaus,jstre,:));
                             factor = obj.computeVoigtFactor(kstre,nstre);
-                            prodTerm = prodTerm + factor*(Pki.*Pkj);                                                        
+                            prodTerm = prodTerm + factor*(Pki.*Pkj);
                         end
                         alpha = obj.monom(t,s);
                         integrandG = integrandG.*(prodTerm.^alpha);
                     end
-                   integrand = integrand + 1/V*integrandG'*dV(:,igaus);
+                    integrand = integrand + 1/V*integrandG'*dV(:,igaus);
                 end
-                P(t) = integrand;                
+                P(t) = integrand;
             end
             obj.Phomog = P;
         end
@@ -120,14 +187,14 @@ classdef AmplificatorComponentsCalculator < handle
                     end
                 end
             end
-        end           
+        end
         
         function Shomog = computeShomog(obj)
             Ct = StiffnessPlaneStressVoigtTensor;
             Ct.setValue(obj.Chomog);
             St = Inverter.invert(Ct);
-            Shomog = St.getValue();            
-        end        
+            Shomog = St.getValue();
+        end
         
     end
     
@@ -159,7 +226,7 @@ classdef AmplificatorComponentsCalculator < handle
             i = T(k,1);
             j = T(k,2);
         end
-       
+        
     end
     
     

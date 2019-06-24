@@ -23,6 +23,8 @@ classdef SettingsTranslator < handle
                 elseif strcmp(prop,'homegenizedVariablesComputer')
                     s.homogenizedVarComputerSettings.type = value;
                     s = obj.translateHomogenizedVariablesComputer(s);
+                elseif strcmp(prop,'pNorm')
+                    s.homogenizedVarComputerSettings.vademecumVariablesLoaderSettings.pNorm = value;                    
                 elseif strcmp(prop,'designVariable')
                     s.designVarSettings.type = value;
                 elseif strcmp(prop,'initial_case')
@@ -174,7 +176,13 @@ classdef SettingsTranslator < handle
                 case 'ByVademecum'
                     if isprop(old,'vademecumFileName')
                         s.homogenizedVarComputerSettings.fileName = old.vademecumFileName;
+                        s.homogenizedVarComputerSettings.vademecumVariablesLoaderSettings.fileName = [old.vademecumFileName,'WithAmplificators'];                       
                     end
+                    
+                    if isprop(old,'pNorm')
+                        s.homogenizedVarComputerSettings.vademecumVariablesLoaderSettings.pNorm = old.pNorm;                        
+                    end
+                    
             end
         end
         

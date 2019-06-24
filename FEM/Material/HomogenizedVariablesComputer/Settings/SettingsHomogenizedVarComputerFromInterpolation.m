@@ -12,6 +12,7 @@ classdef SettingsHomogenizedVarComputerFromInterpolation < ....
         nelem
         ptype
         interpolationSettings
+        vademecumVariablesLoaderSettings        
     end
     
     methods (Access = public)

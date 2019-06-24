@@ -24,7 +24,7 @@ kfrac = 2;
 nsteps = 1;
 homegenizedVariablesComputer = 'ByVademecum';
 vademecumFileName = 'Rectangle';
-
+pNorm = 2;
 
 plotting = false;
 printing = false;
