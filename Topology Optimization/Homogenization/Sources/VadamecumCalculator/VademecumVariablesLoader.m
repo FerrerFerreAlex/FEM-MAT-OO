@@ -78,8 +78,9 @@ classdef VademecumVariablesLoader < handle
         end
         
         function computeMonomials(obj)
+            iPnorm = log2(obj.pNorm);            
             d = obj.vadVariables;
-            obj.monomials = d.monomials;
+            obj.monomials = d.monomials{iPnorm};
         end
     end
     

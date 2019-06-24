@@ -11,8 +11,8 @@ optimizer = 'DualNestedInPrimal';
 optimizerUnconstrained = 'PROJECTED GRADIENT';
 designVariable = 'MicroParams';
 homegenizedVariablesComputer = 'ByVademecum';
-%vademecumFileName = 'Rectangle';%'SmoothRectangle';
-vademecumFileName = 'SmoothRectangle';
+vademecumFileName = 'Rectangle';%'SmoothRectangle';
+%vademecumFileName = 'SmoothRectangle';
 
 nsteps = 1;
 maxiter = 500;
@@ -20,8 +20,8 @@ maxiter = 500;
 Vfrac_initial = 0.3;
 Vfrac_final = 0.3;
 
-optimality_initial = 1e-5;
-optimality_final = 1e-5;
+optimality_initial = 1e-8;
+optimality_final = 1e-8;
 constr_initial = 1e-3;
 constr_final = 1e-3;
 
@@ -32,7 +32,7 @@ ub = 0.989;
 lb = 0.011;
 kfrac = 2;
 
-pNorm = 2;
+pNorm = 4;
 
 
 

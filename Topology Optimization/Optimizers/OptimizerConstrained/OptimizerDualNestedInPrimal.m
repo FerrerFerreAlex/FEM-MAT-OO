@@ -101,7 +101,7 @@ classdef OptimizerDualNestedInPrimal < Optimizer_PrimalDual
 
                 obj.unconstrainedOptimizer.initLineSearch();
                 %kappa = obj.unconstrainedOptimizer.lineSearch.kappa;
-                %obj.unconstrainedOptimizer.lineSearch.kappa = kappa;
+                %obj.unconstrainedOptimizer.lineSearch.kappa = 100*kappa;
 
                 obj.constraintProjector.project();
             end

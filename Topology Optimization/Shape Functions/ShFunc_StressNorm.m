@@ -135,7 +135,7 @@ classdef ShFunc_StressNorm < ShFunWithElasticPdes
             obj.physicalProblem.setC(obj.homogenizedVariablesComputer.C);
             obj.physicalProblem.computeVariables();
             %obj.computeFadjoint();
-            obj.computeFadjoint2();            
+            obj.computeFadjoint2();
             obj.adjointProb.setC(obj.homogenizedVariablesComputer.C);
             obj.adjointProb.computeVariablesWithBodyForces(obj.fAdjoint);
         end
@@ -258,7 +258,7 @@ classdef ShFunc_StressNorm < ShFunWithElasticPdes
             dC = obj.homogenizedVariablesComputer.dCref;
             P  = obj.homogenizedVariablesComputer.PrefVector;
             monom = obj.homogenizedVariablesComputer.monomials;
-            alpha = monom{1};
+            alpha = monom;
             nt = 6;
             ns = 6;
             nr = 6;
@@ -286,25 +286,34 @@ classdef ShFunc_StressNorm < ShFunWithElasticPdes
                                         sj(:,1) = squeeze(stressG(jstre,:));
                                         stress2 = si.*sj;
                                         nSigma = stress2.^(Ast-drs);
-
-
-                                        dsigma = zeros(nelem,1);
-                                        for lstre = 1:nstre
-                                            el(:,1) = squeeze(strainG(lstre,:));
-                                            dCil_iv = squeeze(dC(istre,lstre,ivar,:));
-                                            dCjl_iv = squeeze(dC(jstre,lstre,ivar,:));
-                                            dsigma = dsigma + (sj.*dCil_iv + si.*dCjl_iv).*el;
-                                        end
-                                        sigmaA = sigmaA.*nSigma.*dsigma;
+                                        
+                                        
+                                        
+                                        sigmaA = sigmaA.*nSigma;
                                     end
                                 end
+                                
+                                [istre,jstre] = obj.index(r);
+                                si(:,1) = squeeze(stressG(istre,:));
+                                sj(:,1) = squeeze(stressG(jstre,:));                                
+                                
+                                dsigma = zeros(nelem,1);
+                                for lstre = 1:nstre
+                                    el(:,1) = squeeze(strainG(lstre,:));
+                                    dCil_iv = squeeze(dC(istre,lstre,ivar,:));
+                                    dCjl_iv = squeeze(dC(jstre,lstre,ivar,:));
+                                    dsigma  = dsigma + (sj.*dCil_iv + si.*dCjl_iv).*el;
+                                end
+                                
+                                sigmaA = sigmaA.*dsigma;
+                                
                             end
                             dSdMt = dSdMt + Atr*sigmaA;
                         end
                         giv = squeeze(g(:,igaus,ivar));
                         Pt(:,1) = squeeze(P(t,:));
                         g(:,igaus,ivar) = giv + Pt.*dSdMt;
-                    end                    
+                    end
                 end
             end
         end
@@ -337,7 +346,7 @@ classdef ShFunc_StressNorm < ShFunWithElasticPdes
             ngaus  = obj.physicalProblem.element.quadrature.ngaus;
             dP     = obj.homogenizedVariablesComputer.dPrefVector;
             monom = obj.homogenizedVariablesComputer.monomials;
-            alpha = monom{1};
+            alpha = monom;
             stress = obj.rStress;
             nt = 6;
             ns = 6;
@@ -394,22 +403,22 @@ classdef ShFunc_StressNorm < ShFunWithElasticPdes
             end
         end
         
-         function computeFadjoint2(obj)
+        function computeFadjoint2(obj)
             obj.createRotators();
-            obj.evaluateRotators();            
-            obj.rotateStress();             
-            nstre = obj.physicalProblem.element.getNstre();             
+            obj.evaluateRotators();
+            obj.rotateStress();
+            nstre = obj.physicalProblem.element.getNstre();
             nelem  = obj.physicalProblem.geometry.interpolation.nelem;
             ngaus  = obj.physicalProblem.element.quadrature.ngaus;
             phy    = obj.physicalProblem;
-            dvolum = phy.geometry.dvolu;            
+            dvolum = phy.geometry.dvolu;
             nnode = phy.element.nnode;
             nunkn = phy.element.dof.nunkn;
             stress = obj.rStress;
             P  = obj.homogenizedVariablesComputer.PrefVector;
-            C = obj.homogenizedVariablesComputer.Cref;            
+            C = obj.homogenizedVariablesComputer.Cref;
             monom = obj.homogenizedVariablesComputer.monomials;
-            alpha = monom{1};
+            alpha = monom;
             nt = 6;
             ns = 6;
             nr = 6;
@@ -417,8 +426,8 @@ classdef ShFunc_StressNorm < ShFunWithElasticPdes
             for iv = 1:nnode*nunkn
                 for igaus = 1:ngaus
                     Bmat = phy.element.computeB(igaus);
-                    BmatR = obj.rotateB(Bmat);      
-                    dV(:,1) = dvolum(:,igaus);                    
+                    BmatR = obj.rotateB(Bmat);
+                    dV(:,1) = dvolum(:,igaus);
                     stressG = squeeze(stress(igaus,:,:));
                     for t = 1:nt
                         dSdMt = zeros(size(stressG,2),1);
@@ -439,38 +448,46 @@ classdef ShFunc_StressNorm < ShFunWithElasticPdes
                                         sj(:,1) = squeeze(stressG(jstre,:));
                                         stress2 = si.*sj;
                                         nSigma = stress2.^(Ast-drs);
+                                        
 
+                                        
+                                        sigmaA = sigmaA.*nSigma;
+                                    end
+                                end
+                                
+                                        [istre,jstre] = obj.index(r);
+                                        si(:,1) = squeeze(stressG(istre,:));
+                                        sj(:,1) = squeeze(stressG(jstre,:));                                
+                                
                                         dsigma = zeros(nelem,1);
                                         for lstre = 1:nstre
                                             Cil_iv = squeeze(C(istre,lstre,:));
                                             Cjl_iv = squeeze(C(jstre,lstre,:));
                                             Bl_iv = squeeze(BmatR(lstre,iv,:));
                                             dsigma = dsigma + (sj.*Cil_iv + si.*Cjl_iv).*Bl_iv;
-                                        end                                        
-
-
-                                        sigmaA = sigmaA.*nSigma.*dsigma;
-                                    end
-                                end
+                                        end                                
+                                
+                                sigmaA = sigmaA.*dsigma;
+                                
                             end
                             dSdMt = dSdMt + Atr*sigmaA;
                         end
                         Fiv = squeeze(eforce(iv,igaus,:));
                         Pt(:,1) = squeeze(P(t,:));
                         eforce(iv,igaus,:) = Fiv - Pt.*dSdMt.*dV;
-                    end                    
+                    end
                 end
                 
                 
             end
             Fvol = phy.element.AssembleVector({eforce});
-            obj.fAdjoint = Fvol;  
-         end
+            obj.fAdjoint = Fvol;
+        end
         
         function computeFadjoint(obj)
             obj.createRotators();
-            obj.evaluateRotators();            
-            obj.rotateStress();            
+            obj.evaluateRotators();
+            obj.rotateStress();
             phy    = obj.physicalProblem;
             dvolum = phy.geometry.dvolu;
             stress = obj.rStress;
@@ -485,9 +502,9 @@ classdef ShFunc_StressNorm < ShFunWithElasticPdes
             PC = zeros(size(C));
             for istre = 1:nstre
                 for jstre = 1:nstre
-                        for kstre = 1:nstre
-                            PC(istre,jstre,:) = PC(istre,jstre,:) + P(istre,kstre,:).*C(kstre,jstre,:);
-                        end
+                    for kstre = 1:nstre
+                        PC(istre,jstre,:) = PC(istre,jstre,:) + P(istre,kstre,:).*C(kstre,jstre,:);
+                    end
                 end
             end
             
@@ -511,7 +528,7 @@ classdef ShFunc_StressNorm < ShFunWithElasticPdes
                 end
             end
             Fvol = phy.element.AssembleVector({eforce});
-            obj.fAdjoint = Fvol;            
+            obj.fAdjoint = Fvol;
         end
         
         function Br = rotateB(obj,B)
@@ -522,12 +539,12 @@ classdef ShFunc_StressNorm < ShFunWithElasticPdes
             for istre = 1:nstre
                 for jstre = 1:nstre
                     for iv = 1:nv
-                     Br(istre,iv,:) =  Br(istre,iv,:) + R(istre,jstre,:).*B(jstre,iv,:);
+                        Br(istre,iv,:) =  Br(istre,iv,:) + R(istre,jstre,:).*B(jstre,iv,:);
                     end
                 end
             end
         end
-
+        
         
     end
     

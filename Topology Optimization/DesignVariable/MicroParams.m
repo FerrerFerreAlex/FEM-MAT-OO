@@ -33,6 +33,8 @@ classdef MicroParams < DesignVariable
             m1 = 0.87*ones(ndof,1);
             m2 = 0.87*ones(ndof,1);                        
             
+            %m1 =  0.836660026534076*ones(ndof,1);
+            %m2 =  0.836660026534076*ones(ndof,1);
             
             obj.value = [m1;m2];
             
