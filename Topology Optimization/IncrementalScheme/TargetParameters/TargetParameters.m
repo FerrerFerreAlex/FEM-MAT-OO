@@ -8,6 +8,7 @@ classdef TargetParameters < handle
         epsilon_velocity
         epsilon_perimeter
         epsilon_isotropy
+        pNorm
     end
     
 end

@@ -27,11 +27,11 @@ classdef VademecumAmplificatorAdder < handle
     methods (Access = private)
         
         function init(obj)
-            obj.fileName        = 'SmoothRectangle';
+            obj.fileName        = 'Rectangle';
             obj.fileNameReduced = [obj.fileName,'Reduced'];
             obj.fullFileName        = obj.obtainFullFileName(obj.fileName);  
             obj.fullFileNameReduced = obj.obtainFullFileName(obj.fileNameReduced);  
-            obj.order = [2,4];            
+            obj.order = [2,4,8,16];            
         end
         
         function loadReducedVademecum(obj)

@@ -16,12 +16,12 @@ classdef ConstraintProjector < handle
     methods (Access = public)
         
         function obj = ConstraintProjector(cParams)
-            obj.cost       = cParams.cost;
-            obj.constraint = cParams.constraint;
-            obj.designVariable = cParams.designVariable;
-            obj.dualVariable = cParams.dualVariable;
-            obj.targetParameters = cParams.targetParameters;
-            obj.lagrangian = cParams.lagrangian;
+            obj.cost                   = cParams.cost;
+            obj.constraint             = cParams.constraint;
+            obj.designVariable         = cParams.designVariable;
+            obj.dualVariable           = cParams.dualVariable;
+            obj.targetParameters       = cParams.targetParameters;
+            obj.lagrangian             = cParams.lagrangian;
             obj.unconstrainedOptimizer = cParams.unconstrainedOptimizer;
             obj.defineProblem();
         end

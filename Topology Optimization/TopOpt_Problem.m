@@ -97,6 +97,8 @@ classdef TopOpt_Problem < handle
         
         function createHomogenizedVarComputer(obj,cParams)
             s = cParams.homogenizedVarComputerSettings;
+            s.targetSettings = cParams.incrementalSchemeSettings.targetParamsSettings;            
+            s.targetParams = obj.incrementalScheme.targetParams;
             s.designVariable = obj.designVariable;
             obj.homogenizedVarComputer = HomogenizedVarComputer.create(s);
         end

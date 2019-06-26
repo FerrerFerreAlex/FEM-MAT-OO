@@ -49,6 +49,7 @@ classdef VademecumVariablesComputer < handle
                 for imy = 1:length(myV)
                     obj.specifySamplingCase(imx,imy);
                     obj.computeAmplificators(imx,imy);
+                    (length(myV)*(imx-1)+imy)/(length(mxV)*length(myV))
                 end
             end
         end

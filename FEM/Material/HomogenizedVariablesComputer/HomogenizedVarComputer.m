@@ -12,6 +12,7 @@ classdef HomogenizedVarComputer < handle
     properties (Access = protected)
        nelem
        designVariable
+       targetParameters
     end    
     
     methods (Access = public, Static)

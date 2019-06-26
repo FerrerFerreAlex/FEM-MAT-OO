@@ -22,6 +22,9 @@ classdef SettingsTargetParamsManager < AbstractSettings
         
         epsilonIsoInitial
         epsilonIsoFinal
+        
+        pNormInitial
+        pNormFinal
     end
     
     properties (GetAccess = private, SetAccess = public)

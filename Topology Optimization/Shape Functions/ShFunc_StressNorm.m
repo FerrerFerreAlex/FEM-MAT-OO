@@ -67,8 +67,8 @@ classdef ShFunc_StressNorm < ShFunWithElasticPdes
             dvolum = obj.physicalProblem.geometry.dvolu;
             ngaus  = obj.physicalProblem.element.quadrature.ngaus;
             P  = obj.homogenizedVariablesComputer.PrefVector;
-            monom = obj.homogenizedVariablesComputer.monomials;
-            alpha = monom{1};
+            monom = obj.homogenizedVariablesComputer.PtensorVector.monomials;
+            alpha = monom;
             stress = obj.rStress;
             nt = 6;
             ns = 6;

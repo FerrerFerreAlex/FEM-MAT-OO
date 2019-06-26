@@ -12,7 +12,8 @@ classdef VademecumVariablesLoader < handle
         fileName
         vadVariables
         interpolator        
-        pNorm
+        targetParams
+        targetSettings        
     end
     
     methods (Access = public)
@@ -27,7 +28,6 @@ classdef VademecumVariablesLoader < handle
             obj.computeConstitutiveFromVademecum();
             obj.computeDensityFromVademecum();   
             obj.computePtensorFromVademecum();            
-            obj.computeMonomials();
         end
         
     end
@@ -36,7 +36,8 @@ classdef VademecumVariablesLoader < handle
         
         function init(obj,cParams)
             obj.fileName = cParams.fileName;     
-            obj.pNorm   = cParams.pNorm;
+            obj.targetParams   = cParams.targetParams;
+            obj.targetSettings = cParams.targetSettings;
         end
         
         function loadVademecumVariables(obj)
@@ -71,17 +72,14 @@ classdef VademecumVariablesLoader < handle
             s.vadVariables = obj.vadVariables;
             s.interpolator = obj.interpolator;
             pt  = AmplificatorTensorFromVademecum(s);
-            obj.Ptensor = pt;  
-            s.pNorm = obj.pNorm;
+            obj.Ptensor = pt;              
+            s.targetParams = obj.targetParams;
+            s.targetSettings = obj.targetSettings;
             pt2 = AmplificatorTensorFromVademecumInVectorForm(s);                                    
             obj.PtensorVector = pt2;
         end
         
-        function computeMonomials(obj)
-            iPnorm = log2(obj.pNorm);            
-            d = obj.vadVariables;
-            obj.monomials = d.monomials{iPnorm};
-        end
+
     end
     
 end

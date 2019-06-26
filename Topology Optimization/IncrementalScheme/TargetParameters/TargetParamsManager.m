@@ -5,14 +5,14 @@ classdef TargetParamsManager < handle
     end
     
     properties (Access = private)
-        nSteps
-        
+        nSteps        
         volumeFrac
         constraintTol
         optimalityTol
         epsilon
         epsilonPer
         epsilonIso
+        pNorm                
     end
     
     methods (Access = public)
@@ -45,6 +45,7 @@ classdef TargetParamsManager < handle
             obj.epsilon = LinearSequence(0,1,obj.nSteps,cParams.epsilonInitial,cParams.epsilonFinal);
             obj.epsilonPer = LogarithmicSequence(-0.9,obj.nSteps,cParams.epsilonPerInitial,cParams.epsilonPerFinal);
             obj.epsilonIso = LinearSequence(0,1,obj.nSteps,cParams.epsilonIsoInitial,cParams.epsilonIsoFinal);
+            obj.pNorm = StepSequence(obj.nSteps,cParams.pNormInitial,cParams.pNormFinal);
         end
         
         function computeValues(obj,iStep)
@@ -53,6 +54,7 @@ classdef TargetParamsManager < handle
             obj.optimalityTol.update(iStep);
             obj.epsilon.update(iStep);
             obj.epsilonPer.update(iStep);
+            obj.pNorm.update(iStep);            
 %             epsi = zeros(obj.nSteps,1);
 %             for i = 1:obj.nSteps
 %             obj.epsilonPer.update(i);
@@ -71,6 +73,7 @@ classdef TargetParamsManager < handle
             obj.targetParams.epsilon_velocity = obj.epsilon.value;
             obj.targetParams.epsilon_perimeter = obj.epsilonPer.value;
             obj.targetParams.epsilon_isotropy = obj.epsilonIso.value;
+            obj.targetParams.pNorm = obj.pNorm.value;
         end
         
     end

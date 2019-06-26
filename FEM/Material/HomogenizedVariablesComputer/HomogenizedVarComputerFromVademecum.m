@@ -12,8 +12,8 @@ classdef HomogenizedVarComputerFromVademecum ...
         dPref   
         PrefVector
         dPrefVector
-        monomials
         RepsV
+        monomials        
     end
     
     properties (Access = private)
@@ -31,12 +31,13 @@ classdef HomogenizedVarComputerFromVademecum ...
         
         function obj = HomogenizedVarComputerFromVademecum(cParams)
             s = cParams.vademecumVariablesLoaderSettings;
+            s.targetParams = cParams.targetParams;
+            s.targetSettings = cParams.targetSettings;
             v = VademecumVariablesLoader(s);
             v.load();
             obj.Ctensor = v.Ctensor;
             obj.Ptensor = v.Ptensor;
             obj.density = v.density;
-            obj.monomials = v.monomials;
             obj.PtensorVector = v.PtensorVector;
             obj.computeSymbolicRotationMatrix();
             obj.designVariable = cParams.designVariable;
@@ -56,7 +57,8 @@ classdef HomogenizedVarComputerFromVademecum ...
         end
         
         function computePtensorVector(obj,x)
-            obj.obtainReferenceAmplificatorTensorVector(x);                      
+            obj.obtainReferenceAmplificatorTensorVector(x);
+            obj.monomials = obj.PtensorVector.getMonomials();
         end        
         
         function computeDensity(obj,x)

@@ -23,8 +23,6 @@ classdef SettingsTranslator < handle
                 elseif strcmp(prop,'homegenizedVariablesComputer')
                     s.homogenizedVarComputerSettings.type = value;
                     s = obj.translateHomogenizedVariablesComputer(s);
-                elseif strcmp(prop,'pNorm')
-                    s.homogenizedVarComputerSettings.vademecumVariablesLoaderSettings.pNorm = value;                    
                 elseif strcmp(prop,'designVariable')
                     s.designVarSettings.type = value;
                 elseif strcmp(prop,'initial_case')
@@ -47,6 +45,10 @@ classdef SettingsTranslator < handle
                     s.incrementalSchemeSettings.targetParamsSettings.constrInitial = value;
                 elseif strcmp(prop,'constr_final')
                     s.incrementalSchemeSettings.targetParamsSettings.constrFinal = value;
+                elseif strcmp(prop,'pNorm_initial')
+                    s.incrementalSchemeSettings.targetParamsSettings.pNormInitial = value;
+                elseif strcmp(prop,'pNorm_final')
+                    s.incrementalSchemeSettings.targetParamsSettings.pNormFinal = value;                    
                 elseif strcmp(prop,'cost')
                     for k = 1:length(value)
                         s.costSettings.shapeFuncSettings{k}.type = value{k};

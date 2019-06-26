@@ -4,6 +4,8 @@ classdef SettingsHomogenizedVarComputer < AbstractSettings
         type
         designVariable
         dim
+        targetParams
+        targetSettings                
     end
     
     methods (Access = public, Static)

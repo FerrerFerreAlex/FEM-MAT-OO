@@ -16,7 +16,8 @@ classdef Settings %< handle%& matlab.mixin.Copyable
         e2 
         ub = 1;
         lb = 0;
-        pNorm
+        pNorm_initial
+        pNorm_final        
     end
     
     properties %target parameters
@@ -314,11 +315,17 @@ classdef Settings %< handle%& matlab.mixin.Copyable
                 obj.lb = 0;
             end            
             
-            if exist('pNorm','var')
-                obj.pNorm = pNorm;
+            if exist('pNorm_initial','var')
+                obj.pNorm_initial = pNorm_initial;
             else 
-                obj.pNorm = 2;
+                obj.pNorm_initial = 2;
             end
+            
+            if exist('pNorm_final','var')
+                obj.pNorm_final = pNorm_final;
+            else 
+                obj.pNorm_final = 2;
+            end            
             
         end
         
