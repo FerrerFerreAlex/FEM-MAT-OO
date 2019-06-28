@@ -26,7 +26,7 @@ classdef AmplificatorTensorFromVademecumInVectorForm < VariableFromVademecum
         end
         
         function m = getMonomials(obj)
-            iPnorm = log2(obj.targetParams.pNorm);            
+            iPnorm = obj.computePindex();
             m = obj.monomials{iPnorm};
         end
         
@@ -63,7 +63,7 @@ classdef AmplificatorTensorFromVademecumInVectorForm < VariableFromVademecum
     methods (Access = private)
         
         function [P,dP] = computeValues(obj)
-            iPnorm = log2(obj.targetParams.pNorm);
+            iPnorm = obj.computePindex();
             val = obj.values{iPnorm};            
             ns = size(val,1);
             P  = zeros(ns,obj.nPoints);
@@ -75,6 +75,12 @@ classdef AmplificatorTensorFromVademecumInVectorForm < VariableFromVademecum
                 dP(i,:,1) = dp(:,1);
                 dP(i,:,2) = dp(:,2);
             end
+        end
+        
+        function iP = computePindex(obj)
+            imin = log2(obj.targetSettings.pNormInitial);
+            iPnorm = log2(obj.targetParams.pNorm);
+            iP = iPnorm - (imin -1);
         end
         
     end

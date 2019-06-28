@@ -5,7 +5,8 @@ classdef ShFunc_Volume < ShapeFunctional
     end
     
     methods (Access = public)
-        function obj = ShFunc_Volume(cParams)
+        
+        function obj = ShFunc_Volume(cParams)            
             cParams.filterParams.quadratureOrder = 'CONSTANT';            
             obj.init(cParams);         
             obj.geometricVolume = sum(obj.dvolu(:));
@@ -32,6 +33,17 @@ classdef ShFunc_Volume < ShapeFunctional
             obj.value = volume;            
         end
         
+        function d = getDataToPrint(obj)
+           x = obj.obtainDesignVariableInMatrix();          
+           rho = obj.homogenizedVariablesComputer.calculateDensity(x);            
+           d.density = rho;
+           d.regDensity = obj.homogenizedVariablesComputer.rho;
+        end        
+        
+        function quad = getQuadrature(obj)
+           quad  = obj.filter.quadrature;        
+        end        
+        
     end
     
     methods (Access = private)
@@ -49,16 +61,22 @@ classdef ShFunc_Volume < ShapeFunctional
         end
         
         function updateHomogenizedMaterialProperties(obj)
+            xs = obj.obtainDesignVariableInMatrix();
+            for ivar = 1:obj.nVariables
+               xf(:,ivar) = obj.filter.getP0fromP1(xs(:,ivar));
+            end
+            obj.homogenizedVariablesComputer.computeDensity(xf);
+        end        
+        
+        function xs = obtainDesignVariableInMatrix(obj)
             nx = length(obj.designVariable.value)/obj.designVariable.nVariables;
             x  = obj.designVariable.value;
             for ivar = 1:obj.nVariables
                 i0 = nx*(ivar-1) + 1;
                 iF = nx*ivar;
-                xs = x(i0:iF);
-                xf(:,ivar) = obj.filter.getP0fromP1(xs);
+                xs(:,ivar) = x(i0:iF);
             end             
-            obj.homogenizedVariablesComputer.computeDensity(xf);
-        end        
+        end
         
     end
 end

@@ -37,8 +37,7 @@ classdef ShapesPrinter < CompositeResultsPrinter
             for iprinter = 1:numel(obj.printers)
                 index = obj.printableIndex(iprinter);
                 shape = obj.allShapes{index};   
-                d.phyProblems = shape.getPhysicalProblems();
-                d.regDensity  = shape.getRegularizedDensity();
+                d = shape.getDataToPrint();
                 p = obj.printers{iprinter};
                 p.storeFieldsToPrint(d);
             end
@@ -47,16 +46,16 @@ classdef ShapesPrinter < CompositeResultsPrinter
         function createHeadPrinter(obj,d,dh)
             for iprinter = 1:numel(obj.printers)
                 index = obj.printableIndex(iprinter);
-                shape = obj.allShapes{index};
-                phyPr = shape.getPhysicalProblems(); 
-                d.quad = phyPr{1}.element.quadrature;
                 p = obj.printers{iprinter};                
-                p.createHeadPrinter(d,dh);
                 if p.getHasGaussData()
+                    shape = obj.allShapes{index};    
+                    d.quad = shape.getQuadrature();
+                    p.createHeadPrinter(d,dh);
                     h = p.getHeadPrinter();
                     obj.headPrinter = h;
                     return
                 else
+                    p.createHeadPrinter(d,dh);                    
                     h = p.getHeadPrinter();
                     obj.headPrinter = h;
                 end
@@ -104,7 +103,7 @@ classdef ShapesPrinter < CompositeResultsPrinter
             printingShapes = {'ShFunc_NonSelfAdjoint_Compliance',...
                 'ShFunc_Compliance', 'ShFunc_Compliance',...
                 'ShFunc_Chomog_alphabeta',...
-                'ShFunc_Chomog_fraction'};
+                'ShFunc_Chomog_fraction','ShFunc_Volume','Volume_constraint'};
             itIs = any(strcmp(printingShapes,shapeName));
         end
         

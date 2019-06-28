@@ -32,8 +32,17 @@ classdef ShFunWithElasticPdes < ShapeFunctional
             f{1} = obj.physicalProblem;
         end
         
+        function quad = getQuadrature(obj)
+           quad  = obj.physicalProblem.element.quadrature;        
+        end
+        
         function f = getRegularizedDensity(obj)
             f = obj.regDesignVariable;
+        end
+        
+        function d = getDataToPrint(obj)
+           d.phyProblems = obj.getPhysicalProblems();
+           d.regDensity  = obj.getRegularizedDensity();
         end
         
     end

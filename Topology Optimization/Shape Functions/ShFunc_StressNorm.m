@@ -32,42 +32,43 @@ classdef ShFunc_StressNorm < ShFunWithElasticPdes
     
     methods (Access = protected)
         
-        function computeFunctionValue(obj)
-            obj.rotateStressAndStrain();
-            phy = obj.physicalProblem;
-            dvolum  = phy.geometry.dvolu;
-            stress = obj.rStress;
-            P  = obj.homogenizedVariablesComputer.Pref;
-            
-            ngaus = phy.element.quadrature.ngaus;
-            nstre = size(stress,2);
-            c = 0;
-            for igaus = 1:ngaus
-                stressG = squeeze(stress(igaus,:,:));
-                dV = dvolum(:,igaus);
-                for istre = 1:nstre
-                    sI(:,1) = stressG(istre,:);
-                    for jstre = 1:nstre
-                        sJ(:,1) = stressG(jstre,:);
-                        Pij = squeeze(P(istre,jstre,:));
-                        csum = sI.*Pij.*sJ.*dV;
-                        c = c + sum(csum);
-                    end
-                end
-            end
-            obj.value = c;
-        end
+%         function computeFunctionValue(obj)
+%             obj.rotateStressAndStrain();
+%             phy = obj.physicalProblem;
+%             dvolum  = phy.geometry.dvolu;
+%             stress = obj.rStress;
+%             P  = obj.homogenizedVariablesComputer.Pref;
+%             
+%             ngaus = phy.element.quadrature.ngaus;
+%             nstre = size(stress,2);
+%             c = 0;
+%             for igaus = 1:ngaus
+%                 stressG = squeeze(stress(igaus,:,:));
+%                 dV = dvolum(:,igaus);
+%                 for istre = 1:nstre
+%                     sI(:,1) = stressG(istre,:);
+%                     for jstre = 1:nstre
+%                         sJ(:,1) = stressG(jstre,:);
+%                         Pij = squeeze(P(istre,jstre,:));
+%                         csum = sI.*Pij.*sJ.*dV;
+%                         c = c + sum(csum);
+%                     end
+%                 end
+%             end
+%             obj.value = c;
+%         end
         
         function t = Tfactor(obj,i,j)
             tv = [1 0.5 0.5; 0.5 1 0.5; 0.5 0.5 1];
             t = tv(i,j);
         end
         
-        function c = computeFunctionValue2(obj)
+        function c = computeFunctionValue(obj)
+            obj.rotateStressAndStrain();            
             dvolum = obj.physicalProblem.geometry.dvolu;
             ngaus  = obj.physicalProblem.element.quadrature.ngaus;
             P  = obj.homogenizedVariablesComputer.PrefVector;
-            monom = obj.homogenizedVariablesComputer.PtensorVector.monomials;
+            monom = obj.homogenizedVariablesComputer.monomials;            
             alpha = monom;
             stress = obj.rStress;
             nt = 6;

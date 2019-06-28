@@ -91,6 +91,10 @@ classdef Settings %< handle%& matlab.mixin.Copyable
                 obj.materialInterpolation = method;
             end
             
+            if exist('printMode','var')
+                obj.printMode = printMode;
+            end
+            
             if exist('materialType','var')
                 obj.material = materialType;                
             end

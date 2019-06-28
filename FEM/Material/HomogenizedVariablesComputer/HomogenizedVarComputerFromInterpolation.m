@@ -26,9 +26,13 @@ classdef HomogenizedVarComputerFromInterpolation ...
         end
         
         function computeDensity(obj,rho)
-            obj.rho = rho;
+            obj.rho = obj.calculateDensity(rho);
             obj.drho = ones(size(rho));
         end
+        
+        function rho = calculateDensity(obj,x)
+            rho = x;            
+        end        
         
     end
     

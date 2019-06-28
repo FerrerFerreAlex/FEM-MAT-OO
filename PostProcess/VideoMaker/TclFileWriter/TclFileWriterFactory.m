@@ -6,7 +6,7 @@ classdef TclFileWriterFactory < handle
             switch cParams.type 
                 case 'LevelSet'
                     obj = TclFileWriter_LevelSet(cParams);
-                case {'Density','RegularizedDensity'}
+                case {'Density','RegularizedDensity','MicroParams'}
                     obj = TclFileWriter_Density(cParams);
             end            
         end

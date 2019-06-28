@@ -35,6 +35,8 @@ classdef TopOptResultsPrinterFactory < handle
                     p = {TopOptDesignVariablePrinter(d),...
                         ShapesPrinter(d),...
                         TopOptElementalDensityPrinter(d)};
+                case {'Shapes'}
+                    p{1} = ShapesPrinter(d);
             end 
             obj.printers = p;
         end

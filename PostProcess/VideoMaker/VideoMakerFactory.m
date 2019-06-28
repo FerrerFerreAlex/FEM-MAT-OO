@@ -65,7 +65,8 @@ classdef VideoMakerFactory < handle
                             switch type
                                 case 'LevelSet'
                                     obj = VideoMaker_TopOpt(cParams);
-                                case 'Density'
+                                case {'Density','MicroParams'}
+                                    cParams.designVarType = 'Density';
                                     obj = VideoMaker_TopOpt(cParams);
                             end
                         case '3D'

@@ -69,6 +69,12 @@ classdef HomogenizedVarComputerFromVademecum ...
             obj.drho = drho;
         end        
         
+        function rho = calculateDensity(obj,x)
+            mx = x(:,1);
+            my = x(:,2);
+            [rho,~] = obj.density.compute([mx,my]);            
+        end
+        
     end
     
     methods (Access = private)

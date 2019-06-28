@@ -14,8 +14,7 @@ classdef Filter < handle
     properties (GetAccess = protected, SetAccess = protected)
         P_operator
         
-        geometry
-        quadrature
+        geometry        
         interpolation
         
         mesh
@@ -23,6 +22,7 @@ classdef Filter < handle
         npnod
         shape
         
+        quadrature        
         quadratureOrder
         
     end

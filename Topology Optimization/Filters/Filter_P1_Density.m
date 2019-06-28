@@ -1,5 +1,10 @@
 classdef Filter_P1_Density < handle %Filter_P1
     
+    
+    properties (Access = public)
+        quadrature        
+    end
+    
     properties (Access = private)
        mesh
        quadratureOrder
@@ -10,7 +15,6 @@ classdef Filter_P1_Density < handle %Filter_P1
         x_reg        
 
         geometry
-        quadrature
         
         M
         Kernel        
