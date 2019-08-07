@@ -5,50 +5,90 @@ classdef IntegratorCutMesh < Integrator
         backgroundMesh
     end
     
+    properties (Access = private)
+        backgroundInterp
+        unfittedInterp
+        quadrature
+        unfittedQuad
+        RHScells
+        RHScellsCut
+    end
+    
     methods (Access = public)
         
-        function obj = IntegratorUnfitted(cParams)
+        function obj = IntegratorCutMesh(cParams)
             obj.init(cParams);
-            obj.cutMesh   = obj.mesh;            
-            obj.backgroundMesh = obj.mesh.backgroundMesh;                   
+            obj.cutMesh = obj.mesh;
+            obj.backgroundMesh = obj.cutMesh.getBackgroundMesh();
         end
         
         function A = integrate(obj,F)
-            A = integrateCutCells(obj,F1);
-            A = obj.rearrangeOutputRHS(A);
+            obj.initShapes();
+            obj.computeElementalRHS(F);
+            obj.assembleSubcellsInCells();
+            A = obj.assembleIntegrand();
         end
-
+        
     end
-  
+    
     methods (Access = private)
         
-        function shapeValues = integrateCutCells(obj,F1)
-            interpolation_background = Interpolation.create(obj.backgroundMesh,'LINEAR');
-            interpolation_unfitted = Interpolation.create(obj.cutMesh,'LINEAR');
-            quadrature_unfitted = obj.computeQuadrature(obj.cutMesh.geometryType);
-            
-            posGP_iso_unfitted = obj.computePosGP(obj.cutMesh.coord_iso_per_cell,interpolation_unfitted,quadrature_unfitted);
-            
-            shapeValues = zeros(size(obj.cutMesh.connec,1),interpolation_background.nnode);
-            for isubcell = 1:size(obj.cutMesh.connec,1) % !! VECTORIZE THIS LOOP !!
-                icell = obj.cutMesh.cellContainingSubcell(isubcell);
-                inode = obj.backgroundMesh.connec(icell,:);
-                
-                interpolation_background.computeShapeDeriv(posGP_iso_unfitted(:,:,isubcell)');
-                
-                djacob = obj.mapping(obj.cutMesh.coord(obj.cutMesh.connec(isubcell,:),:),interpolation_unfitted.dvolu); % !! Could be done through Geometry class?? !!
-                
-                F0 = (interpolation_background.shape*quadrature_unfitted.weigp')'*F1(inode)/interpolation_unfitted.dvolu;
-                shapeValues(isubcell,:) = shapeValues(isubcell,:) + (interpolation_background.shape*(djacob.*quadrature_unfitted.weigp')*F0)';
-            end
+        function initShapes(obj)
+            nelem = obj.backgroundMesh.nelem;
+            cNelem = obj.cutMesh.nelem;
+            nnode = obj.backgroundMesh.nnode;
+            obj.RHScells = zeros(nelem,nnode);
+            obj.RHScellsCut = zeros(cNelem,nnode);
         end
         
-        function M2 = rearrangeOutputRHS(obj,shapeValues_AllCells)
-            interpolation = Interpolation.create(obj.backgroundMesh,'LINEAR');
+        function computeElementalRHS(obj,F1)
+            int = obj.RHScellsCut;
+            obj.createBackgroundInterpolation();
+            obj.createUnfittedInterpolation();
+            obj.computeThisQuadrature();
+            obj.computeUnfittedGaussPoints();
             
-            M2 = zeros(interpolation.npnod,1);
-            for inode = 1:interpolation.nnode
-                M2 = M2 + accumarray(obj.backgroundMesh.connec(:,inode),shapeValues_AllCells(:,inode),[interpolation.npnod,1],@sum,0);
+            nelem = obj.cutMesh.nelem;
+            nnode = obj.backgroundInterp.nnode;
+            for isubcell = 1:nelem
+                shape = obj.computeShape(isubcell);
+                djacob = obj.computeJacobian(isubcell);
+                icell  = obj.cutMesh.cellContainingSubcell(isubcell);
+                inode = obj.backgroundMesh.connec(icell,:);
+                weight = obj.quadrature.weigp';
+                dvolu  = obj.unfittedInterp.dvolu;
+                
+                F0 = (shape*weight)'*F1(inode)/dvolu;
+                
+                int(isubcell,:) = int(isubcell,:) + (shape*(djacob.*weight)*F0)';
+            end
+            obj.RHScellsCut = int;
+        end
+        
+        function assembleSubcellsInCells(obj)
+            nnode = obj.backgroundMesh.nnode;
+            nelem = obj.backgroundMesh.nelem;
+            cellNum = obj.cutMesh.cellContainingSubcell;
+            totalInt = obj.RHScells;
+            
+            for iNode = 1:nnode
+                int = obj.RHScellsCut(:,iNode);
+                intGlobal  = accumarray(cellNum,int,[nelem,1],@sum,0);
+                totalInt(:,iNode) = totalInt(:,iNode) + intGlobal;
+            end
+            obj.RHScells = totalInt;
+        end
+        
+        function f = assembleIntegrand(obj)
+            integrand = obj.RHScells;
+            npnod  = obj.backgroundMesh.npnod;
+            nnode  = obj.backgroundMesh.nnode;
+            connec = obj.backgroundMesh.connec;
+            f = zeros(npnod,1);
+            for inode = 1:nnode
+                int = integrand(:,inode);
+                con = connec(:,inode);
+                f = f + accumarray(con,int,[npnod,1],@sum,0);
             end
         end
         
@@ -57,15 +97,15 @@ classdef IntegratorCutMesh < Integrator
         end
         
     end
-
+    
     methods (Static, Access = private)
         
-        function posgp = computePosGP(subcell_coord,interpolation,quadrature)
+        function posgp = computePosGP(coord,interpolation,quadrature)
             interpolation.computeShapeDeriv(quadrature.posgp);
-            posgp = zeros(quadrature.ngaus,size(subcell_coord,3),size(subcell_coord,1));
+            posgp = zeros(quadrature.ngaus,size(coord,3),size(coord,1));
             for igaus = 1:quadrature.ngaus
-                for idime = 1:size(subcell_coord,3)
-                    posgp(igaus,idime,:) = subcell_coord(:,:,idime)*interpolation.shape(:,igaus);
+                for idime = 1:size(coord,3)
+                    posgp(igaus,idime,:) = coord(:,:,idime)*interpolation.shape(:,igaus);
                 end
             end
         end
@@ -95,6 +135,48 @@ classdef IntegratorCutMesh < Integrator
                     V = (1/6)*det([v1;v2;v3]);
                     djacob = V/dvolu;
             end
+        end
+        
+    end
+    
+    methods (Access = private)
+        
+        function shape = computeShape(obj,isubcell)
+            xGauss = obj.unfittedQuad(:,:,isubcell)';
+            obj.backgroundInterp.computeShapeDeriv(xGauss);
+            shape = obj.backgroundInterp.shape;
+        end
+        
+        function computeThisQuadrature(obj)
+            type = obj.cutMesh.geometryType;
+            obj.quadrature = obj.computeQuadrature(type);
+        end
+        
+        function computeUnfittedGaussPoints(obj)
+            coord = obj.cutMesh.subcellIsoCoords;
+            inter = obj.unfittedInterp;
+            quad  =  obj.quadrature;
+            quadU = obj.computePosGP(coord,inter,quad);
+            obj.unfittedQuad = quadU;
+        end
+        
+        function createBackgroundInterpolation(obj)
+            mesh = obj.backgroundMesh;
+            int = Interpolation.create(mesh,'LINEAR');
+            obj.backgroundInterp = int;
+        end
+        
+        function createUnfittedInterpolation(obj)
+            mesh = obj.cutMesh;
+            int = Interpolation.create(mesh,'LINEAR');
+            obj.unfittedInterp = int;
+        end
+        
+        function dJ = computeJacobian(obj,isubcell)
+            connec = obj.cutMesh.connec(isubcell,:);
+            coord  = obj.cutMesh.coord(connec,:);
+            dvolu = obj.unfittedInterp.dvolu;
+            dJ = obj.mapping(coord,dvolu); % !! Could be done through Geometry class?? !!
         end
         
     end

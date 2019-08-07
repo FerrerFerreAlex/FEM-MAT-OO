@@ -7,9 +7,9 @@ classdef Integrator_Composite < Integrator
     
     methods (Access = public)
         
-        function obj = Integrator_Composite(cParams)  
+        function obj = Integrator_Composite(cParams)
             obj.init(cParams);
-            obj.createIntegrators();
+            obj.createIntegrators(cParams);
         end
         
         function A = computeLHS(obj)
@@ -18,46 +18,59 @@ classdef Integrator_Composite < Integrator
             for iInt = 1:obj.nInt
                 A = A + obj.integrators{iInt}.computeLHS();
             end
-        end 
+        end
         
-        function f = computeIntegral(obj,nodalFunc)
+        function f = integrate(obj,nodalFunc)
             f = cell(1,obj.nInt);
             for iInt = 1:obj.nInt
-                f{iInt} = obj.integrators{iInt}.computeIntegral(nodalFunc);
+                f{iInt} = obj.integrators{iInt}.integrate(nodalFunc);
             end
-        end        
-        
-    end
-    
-    methods (Access = protected)
-        
-
-        
-
+        end
         
     end
     
     methods (Access = private)
         
-        function createIntegrators(obj)
+        function createNint(obj,cParams)
+            obj.nInt = numel(cParams.compositeParams);
+        end
+        
+        function createIntegrators(obj,cParams)
+          %   obj.createIntegratorsNew(cParams);
+            obj.createIntegratorsOld();
+        end
+        
+        function createIntegratorsNew(obj,cParams)
+            obj.createNint(cParams);
+            params = cParams.compositeParams;
+            for iInt = 1:obj.nInt
+                s = params{iInt};
+                integrator = Integrator.create(s);
+                obj.integrators{end+1} = integrator;
+            end
+        end
+        
+        function createIntegratorsOld(obj)
             meshC = obj.mesh;
             activeMeshes = meshC.getActiveMeshes();
             for iMesh = 1:meshC.nActiveMeshes
                 thisMesh = activeMeshes{iMesh};
-                switch thisMesh.unfittedType                    
+                cParams.mesh = activeMeshes{iMesh};
+                cParams.type = activeMeshes{iMesh}.unfittedType;
+                switch thisMesh.unfittedType
                     case 'SIMPLE'
-                      cParams.mesh = activeMeshes{iMesh};
-                      cParams.globalConnec = meshC.globalConnectivities{iMesh};
-                      cParams.npnod = obj.mesh.innerMeshOLD.npnod;
-                      obj.integrators{iMesh} = Integrator.create(cParams);
+                        cParams.globalConnec = meshC.globalConnectivities{iMesh};
+                        cParams.backgroundMesh = thisMesh;
+                        cParams.innerToBackground = [];
+                        cParams.npnod = obj.mesh.innerMeshOLD.npnod;
+                        obj.integrators{iMesh} = Integrator.create(cParams);
                     case {'INTERIOR','BOUNDARY'}
-                      cParams.mesh = activeMeshes{iMesh};
-                      obj.integrators{iMesh} = Integrator.create(cParams);                        
+                        obj.integrators{iMesh} = Integrator.create(cParams);
                 end
             end
             obj.nInt = numel(obj.integrators);
         end
-                
+        
     end
     
 end
