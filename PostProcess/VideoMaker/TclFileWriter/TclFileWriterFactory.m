@@ -8,6 +8,8 @@ classdef TclFileWriterFactory < handle
                     obj = TclFileWriter_LevelSet(cParams);
                 case {'Density','RegularizedDensity','MicroParams'}
                     obj = TclFileWriter_Density(cParams);
+                otherwise
+                    obj = TclFileWriter_StandardField(cParams);
             end            
         end
         

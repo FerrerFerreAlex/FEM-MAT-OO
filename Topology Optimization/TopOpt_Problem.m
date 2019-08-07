@@ -61,12 +61,23 @@ classdef TopOpt_Problem < handle
         function postProcess(obj)
             iter = 0:obj.optimizer.nIter;
             obj.videoMaker.iterations = iter;
-            obj.videoMaker.makeVideo();
+            obj.makeDesignVariableVideo();
+            obj.makeRegularizedDensityVideo();
         end
         
     end
     
     methods (Access = private)
+        
+        function makeDesignVariableVideo(obj)
+            s.field.name = obj.designVariable.type;
+            obj.videoMaker.makeVideo(s);            
+        end
+        
+        function makeRegularizedDensityVideo(obj)
+            s.field.name = 'RegularizedDensity';
+            obj.videoMaker.makeVideo(s);                        
+        end
         
         function optSet = obtainOptimizersSettings(obj,settings)
             epsilon = obj.incrementalScheme.targetParams.epsilon;
@@ -98,7 +109,7 @@ classdef TopOpt_Problem < handle
         function createHomogenizedVarComputer(obj,cParams)
             s = cParams.homogenizedVarComputerSettings;
             s.targetSettings = cParams.incrementalSchemeSettings.targetParamsSettings;            
-            s.targetParams = obj.incrementalScheme.targetParams;
+            s.targetParams   = obj.incrementalScheme.targetParams;
             s.designVariable = obj.designVariable;
             obj.homogenizedVarComputer = HomogenizedVarComputer.create(s);
         end
@@ -126,8 +137,8 @@ classdef TopOpt_Problem < handle
         end
         
         function createVideoMaker(obj,cParams)
-            s = cParams.videoMakerSettings;
-            obj.videoMaker = VideoMaker.create(s);
+            s = cParams.videoMakerSettings;            
+            obj.videoMaker = VideoMaker(s);
         end
         
         function createMesh(obj,cParams)

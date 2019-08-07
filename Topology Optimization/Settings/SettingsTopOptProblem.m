@@ -31,7 +31,7 @@ classdef SettingsTopOptProblem < AbstractSettings
             obj.createConstraintSettings();
             obj.updateProblemData();
             obj.createOptimizerSettings();
-            obj.createVideoManagerSettings();
+            obj.createVideoMakerSettings();
             obj.printSummary();
         end
         
@@ -93,11 +93,11 @@ classdef SettingsTopOptProblem < AbstractSettings
             obj.optimizerSettings.init();
         end
         
-        function createVideoManagerSettings(obj)
+        function createVideoMakerSettings(obj)
             s.shallPrint    = obj.optimizerSettings.shallPrint;
-            s.designVarType = obj.designVarSettings.type;
             s.pdim          = obj.problemData.femData.pdim;
-            s.caseFileName  = obj.fileName;            
+            s.caseFileName  = obj.fileName; 
+            s.simulationName = 'TopOpt';
             obj.videoMakerSettings = SettingsVideoMaker(s);
         end
         

@@ -1,7 +1,7 @@
 classdef TclFileWriter < handle
     
     properties (Access = protected)        
-      fieldName
+      field
       tclFileName      
       tclTemplateName      
       fileList
@@ -10,8 +10,11 @@ classdef TclFileWriter < handle
       photoFileName
       iterations
       fileName
+      simulationName
       fullTclTemplateName     
-      outputName      
+      outputName     
+      fieldName
+      fieldComponent
     end
     
     methods (Access = public, Static)
@@ -23,15 +26,35 @@ classdef TclFileWriter < handle
         
     end
     
+     methods (Access = public)         
+
+        function write(obj)
+            fid = fopen(obj.tclFileName,'w+');            
+            fprintf(fid,'GiD_Process PostProcess \n');
+            fprintf(fid,'%s\n',['set arg1 "',obj.fileList,'"']);
+            fprintf(fid,'%s\n',['set arg2 "',obj.videoFileName,'"']);
+            fprintf(fid,'%s\n',['set arg3 "',obj.fieldName,'"']);
+            fprintf(fid,'%s\n',['set arg4 "',obj.fieldComponent,'"']);
+            fprintf(fid,'%s\n',['set arg5 "',obj.photoFileName,'"']);                                    
+            fprintf(fid,'%s\n',['set arg6 "',obj.simulationName,'"']); 
+            fprintf(fid,'%s\n',['source "',obj.fullTclTemplateName,'"']);
+            fprintf(fid,'%s\n',[obj.tclTemplateName,' $arg1 $arg2 $arg3 $arg4 $arg5 $arg6']);
+            fprintf(fid,'%s\n',['GiD_Process Mescape Quit']);
+            fclose(fid);         
+        end               
+               
+    end
+    
     methods (Access = protected)
         
         function init(obj,cParams)
-           obj.fieldName       = cParams.type;
+           obj.fieldName       = cParams.field.name;
            obj.filesFolder     = cParams.filesFolder;
            obj.iterations      = cParams.iterations;
            obj.fileName        = cParams.fileName;
            obj.tclFileName     = cParams.tclFileName;
            obj.outputName      = cParams.outputName;
+           obj.simulationName  = cParams.simulationName;
            obj.createVideoFileName();
            obj.createFileList();           
            obj.createFinalPhotoName();

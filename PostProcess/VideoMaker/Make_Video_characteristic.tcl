@@ -3,9 +3,7 @@ proc Make_Video_characteristic {arg1 arg2 arg3 arg4 arg5 arg6} {
     set output_file_name $arg2
     set Field_2_print $arg3 
     set component $arg4 
-    set min_value $arg5 
-
-
+    set simulationName $arg6
     GiD_Process Mescape
     GiD_Process Mescape Files ReadMultiple -rebuildIndex:0 $postFileList
     GiD_Process 'Zoom Frame Mescape
@@ -36,7 +34,7 @@ proc Make_Video_characteristic {arg1 arg2 arg3 arg4 arg5 arg6} {
     GiD_Process 'Hardcopy Options ShowLegends No Mescape
     GiD_Process 'Hardcopy Options ShowAxes No Mescape
     GiD_Process 'Hardcopy Options PrintLogo No Mescape
-    GiD_Process 'Hardcopy PNG $arg6 Mescape
+    GiD_Process 'Hardcopy PNG $arg5 Mescape
     GiD_Process Utilities Variables PostUpdateWindows Yes Mescape
     GiD_Process Results ContOptions SetMinOptions MinColor Standard Mescape
     GiD_Process Results ContOptions SetMaxOptions MaxColor Standard Mescape

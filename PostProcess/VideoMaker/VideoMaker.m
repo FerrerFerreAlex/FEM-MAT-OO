@@ -10,33 +10,28 @@ classdef VideoMaker < handle
         filesFolder
         fileName
         tclFileWriter
-        fieldName
-        designVariableName
+        field
+        simulationName
     end
     
     methods (Access = public)
         
-        function makeVideo(obj)
-            obj.makeDesignVariableVideo();
-            obj.makeRegularizedDesignVariableVideo();
+        function obj = VideoMaker(cParams)
+           obj.init(cParams); 
+        end
+                
+        function makeVideo(obj,cParams)
+            obj.field = cParams.field;
+            obj.makeFieldVideo();
         end
         
     end
-    
-    methods (Access = public, Static)
-        
-        function obj = create(cParams)
-            f = VideoMakerFactory();
-            obj = f.create(cParams);
-        end
-        
-    end
-    
+      
     methods (Access = protected)
         
         function init(obj,cParams)
-            obj.fileName           = cParams.caseFileName;
-            obj.designVariableName = cParams.designVarType;
+            obj.fileName       = cParams.caseFileName;
+            obj.simulationName = cParams.simulationName;
             obj.createPaths();
             obj.createFolder();
         end
@@ -57,22 +52,12 @@ classdef VideoMaker < handle
             obj.filesFolder = fullfile(pwd,'Output',obj.fileName);
         end
         
-        function makeDesignVariableVideo(obj)
-            obj.fieldName = obj.designVariableName;
-            obj.makeFieldVideo();
-        end
-        
-        function makeRegularizedDesignVariableVideo(obj)
-            obj.fieldName = 'RegularizedDensity';
-            obj.makeFieldVideo();            
-        end
-        
         function makeFieldVideo(obj)
             obj.createTclFileName();
             obj.createTclFileWriter();
             obj.writeTclFile();
             obj.executeTclFile();
-            obj.deleteTclFile();            
+            obj.deleteTclFile();
         end
         
         function createTclFileName(obj)
@@ -81,12 +66,14 @@ classdef VideoMaker < handle
         end
         
         function createTclFileWriter(obj)
-            cParams.type         = obj.fieldName;
-            cParams.tclFileName  = obj.tclFileName;
-            cParams.filesFolder  = obj.filesFolder;
-            cParams.outputName   = [obj.fieldName,obj.fileName];
-            cParams.iterations   = obj.iterations;
-            cParams.fileName     = obj.fileName;
+            cParams.type           = obj.field.name;
+            cParams.tclFileName    = obj.tclFileName;
+            cParams.filesFolder    = obj.filesFolder;
+            cParams.outputName     = [obj.field.name,obj.fileName];
+            cParams.iterations     = obj.iterations;
+            cParams.fileName       = obj.fileName;
+            cParams.field          = obj.field;
+            cParams.simulationName = obj.simulationName;
             obj.tclFileWriter    = TclFileWriter.create(cParams);
         end
         
@@ -111,6 +98,6 @@ classdef VideoMaker < handle
             end
         end
         
-    end    
+    end
     
 end

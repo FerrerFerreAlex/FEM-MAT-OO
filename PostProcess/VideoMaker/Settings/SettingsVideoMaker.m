@@ -9,6 +9,7 @@ classdef SettingsVideoMaker < AbstractSettings
         shallPrint
         designVarType
         pdim
+        simulationName
     end
     
     methods (Access = public)
