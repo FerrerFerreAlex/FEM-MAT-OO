@@ -2,7 +2,7 @@ classdef GiDImageCapturer
     
     properties (Access = private)
         gidPath = '/opt/GiDx64/13.0.2/'
-        pathTcl = '/home/alex/git-repos/FEM-MAT-OO/PostProcess/ImageCapturer/'
+        pathTcl = '/home/alex/git-repos/SwanLab/Swan/PostProcess/ImageCapturer/';
         outPutFolderPath = '/home/alex/Dropbox/Amplificators/Images/'
         resultsFile
         outputImageName
@@ -28,9 +28,14 @@ classdef GiDImageCapturer
         end
         
         function cropImage(obj)
-            name_file = [' ',obj.outputImageName,'.png'];
-            command = strcat('convert -crop 500x500+0+0 -gravity Center ',name_file,' ',name_file);
-            system(command);
+            s.width = 500;
+            s.height = 500;
+            s.right = 0;
+            s.up    = 0;
+            s.inputImage  = obj.outputImageName;
+            s.outputImage = obj.outputImageName;
+            cropper = Cropper(s);
+            cropper.crop();
         end
         
         function createOutPutImageFolder(obj)

@@ -21,14 +21,15 @@ proc Make_Video_standardField {arg1 arg2 arg3 arg4 arg5 arg6} {
     GiD_Process Results AnalysisSel $simulationName $iStep Mescape
     GiD_Process Results ContourFill $Field_2_print $component Mescape
     GiD_Process DisplayStyle bodybound Mescape
-    GiD_Process 'Hardcopy Options ShowLegends No Mescape
+    GiD_Process 'Hardcopy Options ShowLegends Yes Mescape
     GiD_Process 'Hardcopy Options ShowAxes No Mescape
     GiD_Process 'Hardcopy Options PrintLogo No Mescape
     GiD_Process 'AnimationFile AddStep Mescape 
     }
 
     GiD_Process 'AnimationFile End
-    GiD_Process 'Hardcopy Options ShowLegends No Mescape
+    GiD_Process 'MoveScrObj 1 leftmouse 0.476866 -0.497244 
+    GiD_Process 'Hardcopy Options ShowLegends Yes Mescape
     GiD_Process 'Hardcopy Options ShowAxes No Mescape
     GiD_Process 'Hardcopy Options PrintLogo No Mescape
     GiD_Process 'Hardcopy PNG $arg5 Mescape

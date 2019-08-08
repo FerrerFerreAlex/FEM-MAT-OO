@@ -60,7 +60,8 @@ classdef VademecumComputerForGivenVolume < handle
     methods (Access = private)
                 
         function d = computeInputForVademecumCalculator(obj,my)
-            d = SettingsVademecumCellVariablesCalculator();
+            s = [];
+            d = SettingsVademecumCellVariablesCalculator(s);
             d.fileName   = [obj.prefixName,obj.fileName];
             d.freeFemFileName = obj.fileName;
             d.mxMin = my*obj.inclutionRatio;

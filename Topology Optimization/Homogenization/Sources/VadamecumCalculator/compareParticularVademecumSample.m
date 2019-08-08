@@ -37,8 +37,8 @@ classdef compareParticularVademecumSample < handle
     methods (Access = private)
         
         function init(obj)
-            obj.volumes = 0.95;%0.95;%[0.7,0.95];%0.1;
-            obj.inclutionRatio = 1;%1;%0.5;
+            obj.volumes = 0.7;%0.95;%[0.7,0.95];%0.1;
+            obj.inclutionRatio = 0.5;%1;%0.5;
             obj.pNorms = [2,4,8];
             obj.qNorms = [2,4,8,16,32];%[2,4,8,16,32];%[4,8,16,32];
             obj.plottingShearTerms = false;

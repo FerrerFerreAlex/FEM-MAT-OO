@@ -66,15 +66,14 @@ classdef VideoMaker < handle
         end
         
         function createTclFileWriter(obj)
-            cParams.type           = obj.field.name;
-            cParams.tclFileName    = obj.tclFileName;
-            cParams.filesFolder    = obj.filesFolder;
-            cParams.outputName     = [obj.field.name,obj.fileName];
-            cParams.iterations     = obj.iterations;
-            cParams.fileName       = obj.fileName;
-            cParams.field          = obj.field;
-            cParams.simulationName = obj.simulationName;
-            obj.tclFileWriter    = TclFileWriter.create(cParams);
+            s.type           = obj.field.name;
+            s.tclFileName    = obj.tclFileName;
+            s.filesFolder    = obj.filesFolder;
+            s.iterations     = obj.iterations;
+            s.fileName       = obj.fileName;
+            s.field          = obj.field;
+            s.simulationName = obj.simulationName;
+            obj.tclFileWriter = TclFileWriter.create(s);
         end
         
         function writeTclFile(obj)

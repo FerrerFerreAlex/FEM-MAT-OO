@@ -3,9 +3,9 @@ classdef TclFileWriter_Density < TclFileWriter
    methods (Access = public)
        
        function obj = TclFileWriter_Density(cParams)
-           obj.tclTemplateName = 'Make_Video_density';                                           
+           obj.tclTemplateName = 'Make_Video_density';   
+           obj.fieldComponent = cParams.field.name;           
            obj.init(cParams);
-           obj.fieldComponent = cParams.field.name;
        end
     
    end

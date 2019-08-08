@@ -4,8 +4,8 @@ classdef TclFileWriter_LevelSet < TclFileWriter
       
        function obj = TclFileWriter_LevelSet(cParams)
            obj.tclTemplateName = 'Make_Video_characteristic';                                
+           obj.fieldComponent = cParams.field.name;           
            obj.init(cParams);
-           obj.fieldComponent = cParams.field.name;
        end
     
    end

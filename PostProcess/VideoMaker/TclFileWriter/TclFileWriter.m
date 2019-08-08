@@ -53,8 +53,8 @@ classdef TclFileWriter < handle
            obj.iterations      = cParams.iterations;
            obj.fileName        = cParams.fileName;
            obj.tclFileName     = cParams.tclFileName;
-           obj.outputName      = cParams.outputName;
            obj.simulationName  = cParams.simulationName;
+           obj.createOutputName();
            obj.createVideoFileName();
            obj.createFileList();           
            obj.createFinalPhotoName();
@@ -64,6 +64,10 @@ classdef TclFileWriter < handle
     end        
     
     methods (Access = private)
+        
+        function createOutputName(obj)
+             obj.outputName = [obj.fieldName,obj.fieldComponent,obj.fileName];
+        end
         
        function createFullTclTemplateName(obj)
             fName = fullfile(pwd,'PostProcess','VideoMaker',[obj.tclTemplateName,'.tcl']);

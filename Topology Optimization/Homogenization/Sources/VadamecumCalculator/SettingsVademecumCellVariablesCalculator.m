@@ -1,7 +1,7 @@
 classdef SettingsVademecumCellVariablesCalculator < AbstractSettings
     
     properties (Access = protected)
-        defaultParamsName = 'paramsVademecumCellVariablesCalculator'
+        defaultParamsName = 'paramsVademecumCellVariablesCalculator.json'
     end
     
     properties (Access = public)
