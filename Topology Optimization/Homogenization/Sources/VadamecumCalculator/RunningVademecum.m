@@ -28,5 +28,10 @@ d.nMx   = 20;
 d.nMy   = 20;
 d.outPutPath = [];
 d.print = true;
+expParams.gamma = 4;
+expParams.alpha = 6;
+expParams.beta  = 20;
+expParams.type  = 'Hyperbolic';
+d.superEllipseExponentSettings = expParams;
 d.freeFemSettings.hMax = 0.02;%0.0025;
 end

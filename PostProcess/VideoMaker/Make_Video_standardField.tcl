@@ -28,7 +28,6 @@ proc Make_Video_standardField {arg1 arg2 arg3 arg4 arg5 arg6} {
     }
 
     GiD_Process 'AnimationFile End
-    GiD_Process 'MoveScrObj 1 leftmouse 0.476866 -0.497244 
     GiD_Process 'Hardcopy Options ShowLegends Yes Mescape
     GiD_Process 'Hardcopy Options ShowAxes No Mescape
     GiD_Process 'Hardcopy Options PrintLogo No Mescape

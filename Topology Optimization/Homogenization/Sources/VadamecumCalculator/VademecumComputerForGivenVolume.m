@@ -60,8 +60,7 @@ classdef VademecumComputerForGivenVolume < handle
     methods (Access = private)
                 
         function d = computeInputForVademecumCalculator(obj,my)
-            s = [];
-            d = SettingsVademecumCellVariablesCalculator(s);
+            d = SettingsVademecumCellVariablesCalculator();
             d.fileName   = [obj.prefixName,obj.fileName];
             d.freeFemFileName = obj.fileName;
             d.mxMin = my*obj.inclutionRatio;
@@ -73,7 +72,9 @@ classdef VademecumComputerForGivenVolume < handle
             d.outPutPath = [];
             d.print = obj.print;
             d.freeFemSettings.hMax = 0.02;%0.0025;
-            d.freeFemSettings.qNorm = obj.qNorm;
+            expParams.type  = 'Constant';
+            expParams.value = obj.qNorm;
+            d.superEllipseExponentSettings = expParams;
         end
         
         function obtainPrefixName(obj)

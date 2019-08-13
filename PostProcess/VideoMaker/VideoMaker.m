@@ -48,7 +48,8 @@ classdef VideoMaker < handle
         
         function createPaths(obj)
             %obj.gidPath = 'C:\Program Files\GiD\GiD 13.0.4';%
-            obj.gidPath = '/opt/GiDx64/13.0.2/';
+            %obj.gidPath = '/opt/GiDx64/13.0.2/';
+            obj.gidPath = '/opt/GiDx64/14.0.1/';            
             obj.filesFolder = fullfile(pwd,'Output',obj.fileName);
         end
         
@@ -82,7 +83,8 @@ classdef VideoMaker < handle
         
         function executeTclFile(obj)
             tFile = replace(obj.tclFileName,'\','\\');
-            gFile = fullfile(obj.gidPath,'gid_offscreen');
+            %gFile = fullfile(obj.gidPath,'gid_offscreen');
+            gFile = fullfile(obj.gidPath,'gid');            
             executingLine = ['"',gFile,'"', ' -t ' ,'"source ',tFile,'"'];
             system(executingLine);
         end

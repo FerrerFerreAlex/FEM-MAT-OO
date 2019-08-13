@@ -15,7 +15,7 @@ classdef VademecumCellVariablesCalculator < handle
         iter
         freeFemSettings
         print
-        cornerSmoothParams
+        superEllipseExponent
     end
     
     methods (Access = public)
@@ -31,7 +31,7 @@ classdef VademecumCellVariablesCalculator < handle
                 for imy = 1:nMy
                     obj.storeIndex(imx,imy);
                     obj.iter = (imy + nMx*(imx -1));
-                    disp([num2str(obj.iter/(nMx*nMy)*100),'% done']);                    
+                    %disp([num2str(obj.iter/(nMx*nMy)*100),'% done']);                    
                     obj.generateMeshFile();
                     obj.computeNumericalHomogenizer();
                     obj.obtainHomogenizerData();
@@ -59,17 +59,15 @@ classdef VademecumCellVariablesCalculator < handle
     
     methods (Access = private)
         
-        function init(obj,d)
-            obj.computeFileNames(d);
-            nMx = d.nMx;
-            nMy = d.nMy;
-            obj.mxV = linspace(d.mxMin,d.mxMax,nMx);
-            obj.myV = linspace(d.myMin,d.myMax,nMy);
-            obj.print = d.print;
-            obj.freeFemSettings = d.freeFemSettings;
-            obj.cornerSmoothParams.gamma = 4;
-            obj.cornerSmoothParams.alpha = 6;
-            obj.cornerSmoothParams.beta  = 20;
+        function init(obj,cParams)
+            obj.computeFileNames(cParams);
+            nMx = cParams.nMx;
+            nMy = cParams.nMy;
+            obj.mxV = linspace(cParams.mxMin,cParams.mxMax,nMx);
+            obj.myV = linspace(cParams.myMin,cParams.myMax,nMy);
+            obj.print = cParams.print;
+            obj.freeFemSettings = cParams.freeFemSettings;
+            obj.createSuperEllipseExponent(cParams);
         end
         
         function computeFileNames(obj,d)
@@ -84,6 +82,12 @@ classdef VademecumCellVariablesCalculator < handle
             fNs.freeFemFileName = d.freeFemFileName;
             obj.fileNames = fNs;
         end        
+        
+        function createSuperEllipseExponent(obj,cParams)
+            s = cParams.superEllipseExponentSettings;
+            exponent = SuperEllipseExponent.create(s);
+            obj.superEllipseExponent = exponent;            
+        end
         
         function storeIndex(obj,imx,imy)
             obj.iMxIndex = imx;
@@ -103,13 +107,10 @@ classdef VademecumCellVariablesCalculator < handle
         end
         
         function q = computeCornerSmoothingExponent(obj)
-            a = obj.cornerSmoothParams.alpha;
-            b = obj.cornerSmoothParams.beta;
-            c = obj.cornerSmoothParams.gamma;
+            exponent = obj.superEllipseExponent;
             mx = obj.mxV(obj.iMxIndex);
             my = obj.myV(obj.iMyIndex);
-            x = max(mx,my);
-            q = min(512,c*(1/(1-x^b))^a);
+            q = exponent.computeValue(mx,my);
         end
              
         function computeNumericalHomogenizer(obj)
@@ -134,7 +135,7 @@ classdef VademecumCellVariablesCalculator < handle
         end
         
         function obtainVolume(obj)
-            v = obj.homog.cellVariables.volume;
+            v = obj.homog.integrationVar.geoVol;
             imx = obj.iMxIndex;
             imy = obj.iMyIndex;
             obj.variables{imx,imy}.volume = v;

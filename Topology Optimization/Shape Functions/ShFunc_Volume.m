@@ -22,7 +22,6 @@ classdef ShFunc_Volume < ShapeFunctional
         function computeCost(obj)          
             density = obj.homogenizedVariablesComputer.rho;
             obj.computeCostFromDensity(density);  
-            %%% ???
             obj.designVariable.rho = density;
         end        
         

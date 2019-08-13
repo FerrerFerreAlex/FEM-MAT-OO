@@ -19,7 +19,7 @@ classdef  SmoothRectangleVademecumComputerForGivenVolume < ...
         
         function findInclusionLengthForCertainVolume(obj)
             obj.print = false;
-            x0 = [obj.computeInclusionLengthForRectangle,0.99];
+            x0 = [obj.computeInclusionLengthForRectangle(),0.9999];
             problem.objective = @(x) obj.fzero(x);
             problem.x0 = x0;
             problem.solver = 'fzero';

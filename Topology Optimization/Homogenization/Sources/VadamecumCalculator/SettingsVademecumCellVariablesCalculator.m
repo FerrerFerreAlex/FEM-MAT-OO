@@ -16,11 +16,13 @@ classdef SettingsVademecumCellVariablesCalculator < AbstractSettings
         outPutPath
         freeFemSettings
         print
+        superEllipseExponentSettings
     end
     
     methods (Access = public)
         
         function obj = SettingsVademecumCellVariablesCalculator(varargin)
+            obj.freeFemSettings = SettingsFreeFemMeshGenerator();
             switch nargin
                 case 1
                     obj.loadParams(varargin{1});

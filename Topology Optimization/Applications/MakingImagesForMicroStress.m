@@ -51,8 +51,11 @@ classdef MakingImagesForMicroStress < handle
         
         function createMicroCases(obj)
             s.rho = {'07','095','099'};
+            %s.rho = {'03','07','095','099'};
             s.q   = {'2','4','8','16','32'};
+            %s.q   = {'4','8','16','32'};            
             s.txi = {'05'};
+            %s.txi = {'1'};            
             obj.microCases = s;
         end
         
@@ -71,10 +74,10 @@ classdef MakingImagesForMicroStress < handle
         
         
         function createCropperSettings(obj)
-            s.width = 850;
-            s.height = 700;
-            s.right = 400;
-            s.up    = 100;
+            s.width = 500;
+            s.height = 400;
+            s.right = 250;
+            s.up    = 50;
             obj.cropperSettings = s;
         end
         

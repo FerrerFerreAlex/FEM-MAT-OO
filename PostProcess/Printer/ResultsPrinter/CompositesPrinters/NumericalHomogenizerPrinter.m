@@ -45,7 +45,7 @@ classdef NumericalHomogenizerPrinter < CompositeResultsPrinter
                 case 'HomogenizedTensor'
                     obj.storeMicroFields(printer,d)
                 case 'HomogenizedTensorStressBasis'
-                    obj.storeMicroStressBasisFIeld(printer,d)
+                    obj.storeMicroStressBasisField(printer,d)
             end
         end
     end
@@ -63,12 +63,14 @@ classdef NumericalHomogenizerPrinter < CompositeResultsPrinter
         end
         
         function storeMicroFields(printer,d)
-            d.phyProblems{1} = d.fields;
+            d.phyProblems{1} = d.fields{1};
+            %d.regDensity     = d.fields{2};
             printer.storeFieldsToPrint(d);            
         end        
         
-        function storeMicroStressBasisFIeld(printer,d)
-            d.phyProblems{1} = d.fields;
+        function storeMicroStressBasisField(printer,d)
+            d.phyProblems{1} = d.fields{1};
+            d.regDensity     = d.fields{2};
             printer.storeFieldsToPrint(d);
         end
         

@@ -8,12 +8,12 @@ classdef AbstractHomogenizedTensorPrinter < CompositeResultsPrinter
         
         function storeFieldsToPrint(obj,d)
             obj.storeMicroProblemsFields(d);
-            obj.storeRegularizedDensity(d);
+           % obj.storeRegularizedDensity(d);
         end
         
         function createPrinters(obj,d)
             obj.printers        = obj.createMicroProblemsPrinters(d);
-            obj.printers{end+1} = obj.createRegularizedDensityPrinter(d);
+          %  obj.printers{end+1} = obj.createRegularizedDensityPrinter(d);
         end
         
         function computeNstre(obj,ndim)
@@ -35,14 +35,14 @@ classdef AbstractHomogenizedTensorPrinter < CompositeResultsPrinter
             end
         end
         
-        function p = createRegularizedDensityPrinter(obj,d)
-            p = ResultsPrinter.create('DensityGauss',d);
-        end                        
+%         function p = createRegularizedDensityPrinter(obj,d)
+%             p = ResultsPrinter.create('DensityGauss',d);
+%         end                        
                 
-        function storeRegularizedDensity(obj,d)
-            d.fields = d.regDensity;
-            obj.printers{obj.nstre+1}.storeFieldsToPrint(d);
-        end                        
+%         function storeRegularizedDensity(obj,d)
+%             d.fields = d.regDensity;
+%             obj.printers{obj.nstre+1}.storeFieldsToPrint(d);
+%         end                        
         
     end
     

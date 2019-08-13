@@ -98,7 +98,7 @@ classdef Elastic_Problem_Micro < Elastic_Problem
                     
         
         function v = computeGeometricalVolume(obj)
-            v = 1;%sum(sum(obj.geometry.dvolu));
+            v = sum(sum(obj.geometry.dvolu));
         end                                 
         
         

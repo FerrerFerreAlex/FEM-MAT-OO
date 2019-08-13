@@ -187,9 +187,9 @@ classdef NumericalHomogenizer < handle
                 obj.createPrintersNames();
                 obj.createPostProcess();
                 d.var2print = obj.elemDensCr.getFieldsToPrint;
-                d.var2print{end+1} = obj.microProblem;
+                d.var2print{end+1} = {obj.microProblem,obj.density};
                % obj.microProblem.variables.var2print = obj.microProblem.variablesStressBasis.var2print;
-                d.var2print{end+1} = obj.microProblem;
+                d.var2print{end+1} = {obj.microProblem,obj.density};
                 d.quad = obj.microProblem.element.quadrature;
                 obj.postProcess.print(obj.iter,d);
                 obj.resFile = obj.postProcess.getResFile();
@@ -214,6 +214,8 @@ classdef NumericalHomogenizer < handle
         function dB = createPostProcessDataBase(obj)
             dI.mesh            = obj.microProblem.mesh;
             dI.outName         = obj.outputName;
+            dI.pdim            = obj.pdim;
+            dI.ptype           = 'MICRO';
             ps = PostProcessDataBaseCreator(dI);
             dB = ps.getValue();
         end
