@@ -32,15 +32,18 @@ classdef OptimalSuperEllipseExponentComputer < handle
         end
         
         function generateMesh(obj)
+            s.freeFemSettings  = obj.computeFreeFemSettings();
+            s.fileName         = obj.fileName;    
+            inputFileGenerator = InputFemFileGeneratorFromFreeFem(s); 
+            inputFileGenerator.generate();
+        end
+        
+        function s = computeFreeFemSettings(obj)
             s = SettingsFreeFemMeshGenerator();
             s.mxV             = obj.mxV;
             s.myV             = obj.myV;
-            s.fileName        = obj.fileName;
-            s.freeFemFileName = obj.fileName;
-            s.printingDir     = obj.outPutDir;
             s.qNorm           = obj.qV;
-            fG = FreeFemMeshGenerator(s);
-            fG.generate();
+            s.freeFemFileName = obj.fileName;                                
         end
         
         function createSwanInputData(obj)
@@ -59,15 +62,14 @@ classdef OptimalSuperEllipseExponentComputer < handle
         end
         
         function createMicroProblem(obj)
-            defaultDB = NumericalHomogenizerDataBase([obj.fileName,'.m']);
-            dB = defaultDB.dataBase;
-            dB.outFileName = obj.fileName;
-            dB.microProblemCreatorSettings.settings.levelSet.type = 'full';           
-            s = dB.microProblemCreatorSettings;
+            numHomogSettings = NumericalHomogenizerDataBase([obj.fileName,'.m']);
+            s = numHomogSettings.dataBase;
+            s.outFileName = obj.fileName;
+            mS = s.microProblemCreatorSettings;
+            mS.settings.levelSet.type = 'full';           
+            s = s.microProblemCreatorSettings;
             microCreator = MicroProblemCreator(s);
-            microCreator.create();
-            
-            
+            microCreator.create();                        
         end
                
     end

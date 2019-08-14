@@ -32,9 +32,9 @@ classdef VademecumCellVariablesCalculator < handle
                     obj.storeIndex(imx,imy);
                     obj.iter = (imy + nMx*(imx -1));
                     %disp([num2str(obj.iter/(nMx*nMy)*100),'% done']);                    
-                    obj.generateMeshFile();
+                    obj.generateInputFemFile();
                     obj.computeNumericalHomogenizer();
-                    obj.obtainHomogenizerData();
+                    obj.obtainHomogenizedData();
                 end
             end
         end        
@@ -51,8 +51,8 @@ classdef VademecumCellVariablesCalculator < handle
             d.variables        = obj.variables;
             d.domVariables.mxV = obj.mxV;
             d.domVariables.myV = obj.myV;
-            d.outPutPath    = obj.fileNames.outPutPath;
-            d.fileName      = obj.fileNames.fileName;
+            d.outPutPath       = obj.fileNames.outPutPath;
+            d.fileName         = obj.fileNames.fileName;
         end
          
     end    
@@ -74,11 +74,9 @@ classdef VademecumCellVariablesCalculator < handle
             fN = d.fileName;
             oP = d.outPutPath;
             pD = fullfile(pwd,'Output',fN);
-            gF = [fullfile(pD,fN),'.msh'];
             fNs.fileName    = fN;
             fNs.outPutPath  = oP;
             fNs.printingDir = pD;                        
-            fNs.gmsFile     = gF;
             fNs.freeFemFileName = d.freeFemFileName;
             obj.fileNames = fNs;
         end        
@@ -92,84 +90,53 @@ classdef VademecumCellVariablesCalculator < handle
         function storeIndex(obj,imx,imy)
             obj.iMxIndex = imx;
             obj.iMyIndex = imy;
-        end
-        
-        function generateMeshFile(obj)
-            d = obj.freeFemSettings;
-            d.mxV             = obj.mxV(obj.iMxIndex);
-            d.myV             = obj.myV(obj.iMyIndex);
-            d.fileName        = obj.fileNames.fileName;
-            d.freeFemFileName = obj.fileNames.freeFemFileName;
-            d.printingDir     = obj.fileNames.printingDir;
-            d.qNorm           = obj.computeCornerSmoothingExponent();
-            fG = FreeFemMeshGenerator(d);
-            fG.generate();
-        end
-        
+        end        
+
         function q = computeCornerSmoothingExponent(obj)
             exponent = obj.superEllipseExponent;
             mx = obj.mxV(obj.iMxIndex);
             my = obj.myV(obj.iMyIndex);
             q = exponent.computeValue(mx,my);
         end
+    
+        function generateInputFemFile(obj)
+            s.freeFemSettings  = obj.computeFreeFemSettings();
+            s.fileName         = obj.fileNames.fileName;    
+            inputFileGenerator = InputFemFileGeneratorFromFreeFem(s); 
+            inputFileGenerator.generate();
+        end
+        
+        function s = computeFreeFemSettings(obj)
+            s = obj.freeFemSettings;
+            s.mxV             = obj.mxV(obj.iMxIndex);
+            s.myV             = obj.myV(obj.iMyIndex);
+            s.qNorm           = obj.computeCornerSmoothingExponent();           
+            s.freeFemFileName = obj.fileNames.freeFemFileName;                                 
+        end
              
         function computeNumericalHomogenizer(obj)
-            d.gmsFile = obj.fileNames.gmsFile;
-            d.outFile = [obj.fileNames.fileName];
-            d.print   = obj.print;
-            d.iter = obj.iter;
-            nH = NumericalHomogenizerCreatorFromGmsFile(d);
-            obj.homog = nH.getHomogenizer();
+            d = obj.createNumericalHomogenizerSettings();
+            obj.homog = NumericalHomogenizer(d);
+            obj.homog.iter = obj.iter;
+            obj.homog.compute();                                
         end
         
-        function obtainHomogenizerData(obj)
-            obj.obtainComputedCellVariables();
-            obj.obtainIntegrationVariables();
-        end
+        function s = createNumericalHomogenizerSettings(obj)
+            outFile = [obj.fileNames.fileName];
+            numHomogSett = NumericalHomogenizerDataBase([outFile,'.m']);
+            s = numHomogSett.dataBase;
+            s.outFileName = outFile;
+            s.print       = obj.print;
+            s.microProblemCreatorSettings.settings.levelSet.type = 'full';
+        end  
         
-        function obtainComputedCellVariables(obj)
-            obj.obtainVolume();   
-            obj.obtainCtensor();
-            obj.obtainStressesAndStrain();
-            obj.obtainDisplacements();
-        end
-        
-        function obtainVolume(obj)
-            v = obj.homog.integrationVar.geoVol;
-            imx = obj.iMxIndex;
-            imy = obj.iMyIndex;
-            obj.variables{imx,imy}.volume = v;
-        end      
-        
-        function obtainCtensor(obj)
-            Ch = obj.homog.cellVariables.Ch;
-            imx = obj.iMxIndex;
-            imy = obj.iMyIndex;
-            obj.variables{imx,imy}.Ctensor = Ch;
-        end
-        
-        function obtainStressesAndStrain(obj)
-            stress = obj.homog.cellVariables.tstress;            
-            strain = obj.homog.cellVariables.tstrain;                        
-            imx = obj.iMxIndex;
-            imy = obj.iMyIndex;
-            obj.variables{imx,imy}.tstress = stress;
-            obj.variables{imx,imy}.tstrain = strain;            
-        end
-        
-        function obtainDisplacements(obj)
-            displ = obj.homog.cellVariables.displ;                        
-            imx = obj.iMxIndex;
-            imy = obj.iMyIndex;
-            obj.variables{imx,imy}.displ = displ;
-        end
-        
-        function obtainIntegrationVariables(obj)
-            intVar = obj.homog.integrationVar;
-            imx = obj.iMxIndex;
-            imy = obj.iMyIndex;            
-            obj.variables{imx,imy}.integrationVar = intVar;
-        end
+        function obtainHomogenizedData(obj)
+            ix = obj.iMxIndex;
+            iy = obj.iMyIndex;            
+            s.homogenizer = obj.homog;
+            variablesGetter = VademecumVariablesGetter(s);
+            obj.variables{ix,iy} = variablesGetter.get();            
+        end    
         
     end
     

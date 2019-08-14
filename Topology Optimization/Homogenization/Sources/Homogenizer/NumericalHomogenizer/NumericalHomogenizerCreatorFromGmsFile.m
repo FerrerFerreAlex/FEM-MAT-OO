@@ -1,7 +1,6 @@
 classdef NumericalHomogenizerCreatorFromGmsFile < handle
     
     properties (Access = private)
-        gmsFile        
         outFile
         homog 
         homogDataBase     
@@ -13,7 +12,6 @@ classdef NumericalHomogenizerCreatorFromGmsFile < handle
         
         function obj = NumericalHomogenizerCreatorFromGmsFile(d)
             obj.init(d)
-            obj.createSwanInputData();
             obj.createNumericalHomogenizerDataBase();
             obj.createNumericalHomogenizer();
         end
@@ -31,21 +29,11 @@ classdef NumericalHomogenizerCreatorFromGmsFile < handle
     methods (Access = private)
         
         function init(obj,d)
-            obj.gmsFile = d.gmsFile;
             obj.outFile = d.outFile;
             obj.print   = d.print;
             obj.iter    = d.iter;
         end
                  
-        function createSwanInputData(obj)
-            outPutFileName   = fullfile('Output',obj.outFile);
-            s.gmsFile        = obj.gmsFile;
-            s.outPutDir      = outPutFileName;
-            s.outPutFileName = fullfile(outPutFileName,[obj.outFile,'.m']);                    
-            c = GmsFile2SwanFileConverter(s);
-            c.convert();
-        end        
-        
         function createNumericalHomogenizerDataBase(obj)
             defaultDB = NumericalHomogenizerDataBase([obj.outFile,'.m']);
             dB = defaultDB.dataBase;

@@ -34,20 +34,20 @@ classdef FreeFemMeshGenerator < handle
         
     methods (Access = private)
         
-        function init(obj,d)
-            obj.loadSettignsParams(d);
+        function init(obj,cParams)
+            obj.loadSettignsParams(cParams);
             obj.filePath         = fullfile(obj.printingDir,obj.fileName);
             obj.freeFemModelFile = fullfile('Input',obj.freeFemFileName,[obj.freeFemFileName,'Model','.edp']);
             obj.freeFemFile      = [obj.filePath,'.edp'];                        
         end
         
-        function loadSettignsParams(obj,d)
-          fields = fieldnames(d);            
+        function loadSettignsParams(obj,cParams)
+          fields = fieldnames(cParams);            
           for i = 1:length(fields)
                 param = fields(i);
                 param = param{1};
                 if isprop(obj,param)
-                    obj.(param) = d.(param);
+                    obj.(param) = cParams.(param);
                 else
                     obj.warnOfInvalidCustomParams(param);
                 end
