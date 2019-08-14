@@ -1,18 +1,17 @@
 classdef ElementalDensityCreator < handle
-    
-    
+       
    properties (Access = protected)
        density       
    end
    
    methods (Access = public, Static)
        
-       function eC = create(type,cParams)
+       function obj = create(cParams)
           f = ElementalDensityCreatorFactory();
-          eC = f.create(type); 
-          eC.createDensity(cParams);
-       end
-   end
+          obj = f.create(cParams);            
+       end       
+       
+   end 
    
    methods (Access = public)
        
@@ -27,10 +26,10 @@ classdef ElementalDensityCreator < handle
        function f = getFieldsToPrint(obj)
            f{1} = obj.density;
        end
-       
+            
    end
     
-   methods (Access = protected, Abstract)
+   methods (Access = public, Abstract)
        createDensity(obj)
    end
     

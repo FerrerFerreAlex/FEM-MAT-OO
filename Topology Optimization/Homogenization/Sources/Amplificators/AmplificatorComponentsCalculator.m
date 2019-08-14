@@ -183,7 +183,8 @@ classdef AmplificatorComponentsCalculator < handle
             for istre = 1:nstre
                 for jstre = 1:nstre
                     for kstre = 1:nstre
-                        Pt(istre,:,jstre,:) = Pt(istre,:,jstre,:) + tstres(istre,:,kstre,:)*Shomog(kstre,jstre);
+                        P = tstres(istre,:,kstre,:)*Shomog(kstre,jstre);
+                        Pt(istre,:,jstre,:) = Pt(istre,:,jstre,:) + P;
                     end
                 end
             end

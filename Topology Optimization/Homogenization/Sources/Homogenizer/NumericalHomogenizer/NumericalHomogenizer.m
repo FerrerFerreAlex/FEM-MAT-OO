@@ -70,68 +70,21 @@ classdef NumericalHomogenizer < handle
         end
         
         function createMicroProblem(obj)
-            obj.buildMicroProblem();            
-            obj.createInterpolation();
-            obj.createElementalDensityCreator();
-            obj.obtainDensity();
-            obj.createMaterialProperties()
-            obj.setMaterialPropertiesInMicroProblem()
+            s.fileName       = obj.fileName;
+            s.pdim           = obj.pdim;
+            s.settings.materialInterpolation = obj.matDataBase;
+            s.settings.levelSet              = obj.lsDataBase;
+            s.settings.interpolation         = obj.interDataBase;
+            s.settings.elementDensityCreator = obj.eDensCreatType;
+            microCreator = MicroProblemCreator(s);
+            microCreator.create();
+            obj.microProblem = microCreator.microProblem;
+            obj.density      = microCreator.density;
+            obj.elemDensCr   = microCreator.elemDensCr;
+            obj.eDensCreatType = microCreator.eDensCreatType;
+            obj.matValues = microCreator.matValues;
         end
-        
-        function buildMicroProblem(obj)
-            obj.microProblem = Elastic_Problem_Micro(obj.fileName);
-            obj.microProblem.preProcess();
-        end        
-        
-        function createInterpolation(obj)
-            d.interpolation = obj.interDataBase.materialInterpolation;
-            d.constitutiveProperties  = obj.matDataBase.matProp;
-            d.typeOfMaterial = obj.matDataBase.materialType;
-            d.dim  = obj.pdim;
-            mI  = Material_Interpolation.create(d);
-            obj.interpolation = mI;
-            obj.matValues = d.constitutiveProperties;
-        end
-        
-        function createElementalDensityCreator(obj)
-            type = obj.eDensCreatType;
-            de   = obj.createElementalDensityCreatorDataBase();
-            edc  = ElementalDensityCreator.create(type,de);
-            obj.elemDensCr = edc;
-        end
-        
-        function d = createElementalDensityCreatorDataBase(obj)
-            dl = obj.createLevelSetCreatorDataBase();
-            df = obj.createFilterDataBase();
-            d.levelSetCreatorDataBase = dl;
-            d.filterDataBase = df;
-        end
-        
-        function d = createLevelSetCreatorDataBase(obj)
-            d = obj.lsDataBase;
-            d.ndim  = obj.microProblem.mesh.ndim;
-            d.coord = obj.microProblem.mesh.coord;
-        end
-        
-        function d = createFilterDataBase(obj)
-            d.shape = obj.microProblem.element.interpolation_u.shape;
-            d.conec = obj.microProblem.geometry.interpolation.T;
-            d.quadr = obj.microProblem.element.quadrature;
-        end        
-        
-        function obtainDensity(obj)
-            obj.density = obj.elemDensCr.getDensity();
-        end
-        
-        function createMaterialProperties(obj)
-            d = obj.density;
-            obj.matProp = obj.interpolation.computeMatProp(d);
-        end
-        
-        function setMaterialPropertiesInMicroProblem(obj)
-            obj.microProblem.setMatProps(obj.matProp);
-        end
-        
+   
         function computeCellVariables(obj)
             obj.computeVolumeValue();
             obj.computeElasticVariables();
@@ -188,7 +141,6 @@ classdef NumericalHomogenizer < handle
                 obj.createPostProcess();
                 d.var2print = obj.elemDensCr.getFieldsToPrint;
                 d.var2print{end+1} = {obj.microProblem,obj.density};
-               % obj.microProblem.variables.var2print = obj.microProblem.variablesStressBasis.var2print;
                 d.var2print{end+1} = {obj.microProblem,obj.density};
                 d.quad = obj.microProblem.element.quadrature;
                 obj.postProcess.print(obj.iter,d);

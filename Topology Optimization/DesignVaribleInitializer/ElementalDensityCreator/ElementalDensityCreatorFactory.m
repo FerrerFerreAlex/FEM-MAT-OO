@@ -3,12 +3,12 @@ classdef ElementalDensityCreatorFactory < handle
     
    methods (Access = public, Static)
               
-       function e = create(type)
-            switch type
+       function e = create(cParams)
+            switch cParams.type
                 case 'ElementalDensityCreatorByLevelSetCreator'
-                    e = EdcByLevelSetCreator();
+                    e = EdcByLevelSetCreator(cParams);
                 case 'ElementalDensityCreatorByLevelSet'
-                    e = EdcByLevelSet();
+                    e = EdcByLevelSet(cParams);
                 case 'EdcExplicit'
             end              
        end
