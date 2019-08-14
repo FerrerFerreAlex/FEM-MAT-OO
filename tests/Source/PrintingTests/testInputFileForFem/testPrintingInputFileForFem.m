@@ -11,10 +11,10 @@ classdef testPrintingInputFileForFem < testNotShowingError
         
         function obj = testPrintingInputFileForFem()
             obj.init();
-            g  = obj.gmsFile;
-            oD = obj.resultsDir;
-            oF = obj.fullFileName;
-            c = GmsFile2SwanFileConverter(g,oD,oF);
+            s.gmsFile        = obj.gmsFile;
+            s.outPutDir      = obj.resultsDir;
+            s.outPutFileName = obj.fullFileName;
+            c = GmsFile2SwanFileConverter(s);
             c.convert();
         end
         

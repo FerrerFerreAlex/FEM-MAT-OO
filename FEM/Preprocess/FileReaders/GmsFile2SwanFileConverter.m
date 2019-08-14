@@ -9,8 +9,8 @@ classdef GmsFile2SwanFileConverter < handle
     
     methods (Access = public)
         
-        function obj = GmsFile2SwanFileConverter(gF,oD,oF)
-            obj.init(gF,oD,oF)
+        function obj = GmsFile2SwanFileConverter(cParams)
+            obj.init(cParams)
         end
         
         function convert(obj)
@@ -22,10 +22,10 @@ classdef GmsFile2SwanFileConverter < handle
     
     methods (Access = private)
         
-        function init(obj,gmsFile,outPutDir,outPutFileName)
-            obj.gmsFile = gmsFile;
-            obj.outPutDir = outPutDir;
-            obj.outPutFileName = outPutFileName;            
+        function init(obj,cParams)
+            obj.gmsFile        = cParams.gmsFile;
+            obj.outPutDir      = cParams.outPutDir;
+            obj.outPutFileName = cParams.outPutFileName;            
         end
         
         function readGmsFile(obj)

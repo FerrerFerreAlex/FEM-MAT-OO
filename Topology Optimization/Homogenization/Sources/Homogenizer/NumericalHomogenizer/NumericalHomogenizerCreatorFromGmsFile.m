@@ -38,18 +38,20 @@ classdef NumericalHomogenizerCreatorFromGmsFile < handle
         end
                  
         function createSwanInputData(obj)
-            oD = fullfile('Output',obj.outFile);
-            fullOutFile = fullfile(oD,[obj.outFile,'.m']);
-            c = GmsFile2SwanFileConverter(obj.gmsFile,oD,fullOutFile);
+            outPutFileName   = fullfile('Output',obj.outFile);
+            s.gmsFile        = obj.gmsFile;
+            s.outPutDir      = outPutFileName;
+            s.outPutFileName = fullfile(outPutFileName,[obj.outFile,'.m']);                    
+            c = GmsFile2SwanFileConverter(s);
             c.convert();
         end        
         
         function createNumericalHomogenizerDataBase(obj)
             defaultDB = NumericalHomogenizerDataBase([obj.outFile,'.m']);
             dB = defaultDB.dataBase;
-            dB.outFileName                   = obj.outFile;
-            dB.print                         = obj.print;
-            dB.levelSetDataBase.type = 'full';
+            dB.outFileName = obj.outFile;
+            dB.print       = obj.print;
+            dB.microProblemCreatorSettings.settings.levelSet.type = 'full';
             obj.homogDataBase = dB;
         end  
         

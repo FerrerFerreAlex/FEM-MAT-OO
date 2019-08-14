@@ -6,12 +6,15 @@ classdef NumericalHomogenizerDataBase < handle
     
     properties (Access = private)
         femFileName
+        pdim
+        elementDensityCreatorType
     end
     
     methods (Access = public)
         
         function obj = NumericalHomogenizerDataBase(femFileName)
-            obj.femFileName = femFileName;
+            obj.init(femFileName)
+            obj.createMicroProblemCreatorSettings();
             obj.createDataBase();
         end
         
@@ -20,28 +23,32 @@ classdef NumericalHomogenizerDataBase < handle
     
     methods (Access = private)
         
+        function init(obj,femFileName)
+            obj.femFileName = femFileName;
+            obj.elementDensityCreatorType = 'ElementalDensityCreatorByLevelSetCreator';
+            obj.pdim                      = '2D';                                   
+        end
+        
         function createDataBase(obj)
             d = obj.createNumericalHomogenizerDataBase();
-            d.levelSetDataBase       = obj.createLevelSetDataBase();
-            d.materialInterpDataBase = obj.createMaterialInterpDataBase();
-            d.materialDataBase       = obj.createMaterialDataBase();
+           % d.levelSetDataBase       = obj.createLevelSetDataBase();
+           % d.materialInterpDataBase = obj.createMaterialInterpDataBase();
+           % d.materialDataBase       = obj.createMaterialDataBase();
             d.volumeShFuncDataBase   = obj.createShVolumeDataBase(d);
             obj.dataBase = d;
         end
         
         function d = createNumericalHomogenizerDataBase(obj)
-            edt = 'ElementalDensityCreatorByLevelSetCreator';
-            d.elementDensityCreatorType = edt;
+            d = obj.dataBase;
+            d.elementDensityCreatorType = obj.elementDensityCreatorType;
             d.outFileName  = 'NumericalHomogenizer';
             d.testName     = obj.femFileName;
             d.print = false;
             d.iter  = 0;
-            d.pdim = '2D';
+            d.pdim = obj.pdim;
         end
         
         function d = createShVolumeDataBase(obj,dI)
-
-            
             d = SettingsShapeFunctional();
             d.filterParams.filterType = 'P1';
             s = SettingsDesignVariable();
@@ -64,14 +71,34 @@ classdef NumericalHomogenizerDataBase < handle
             d.femSettings.scale = 'MICRO';
             mesh = d.filterParams.designVar.mesh;
             
+            microSettings = dI.microProblemCreatorSettings.settings; 
+            
             sHomog.type                   = 'ByInterpolation';
-            sHomog.interpolation          = dI.materialInterpDataBase.materialInterpolation;
+            sHomog.interpolation          = microSettings.interpolation.materialInterpolation;
             sHomog.dim                    = dI.pdim;
-            sHomog.typeOfMaterial         = dI.materialDataBase.materialType;
-            sHomog.constitutiveProperties = dI.materialDataBase.matProp;
+            sHomog.typeOfMaterial         = microSettings.materialInterpolation.materialType;
+            sHomog.constitutiveProperties = microSettings.materialInterpolation.matProp;
             sHomog.nelem                  = size(mesh.coord,1);
             sHomog = SettingsHomogenizedVarComputer.create(sHomog);
             d.homogVarComputer = HomogenizedVarComputer.create(sHomog);
+        end
+        
+        function createMicroProblemCreatorSettings(obj)
+            s.levelSet              = obj.createLevelSetDataBase();
+            s.interpolation         = obj.createMaterialInterpDataBase();
+            s.materialInterpolation = obj.createMaterialDataBase();
+            s.elementDensityCreator = obj.elementDensityCreatorType;
+            microSettings.settings  = s;
+            microSettings.pdim      = obj.pdim;
+            microSettings.fileName  = obj.femFileName;
+            d = obj.dataBase;
+            d.microProblemCreatorSettings = microSettings;
+            obj.dataBase = d;
+        end
+        
+        function d = createMaterialInterpDataBase(obj)
+            d.materialInterpolation = 'SIMPALL';
+            d.dim                   = obj.pdim;
         end
         
     end
@@ -84,9 +111,6 @@ classdef NumericalHomogenizerDataBase < handle
             d.volume = 0.5;
         end
         
-        function d = createMaterialInterpDataBase()
-            d.materialInterpolation = 'SIMPALL';
-        end
         
         function d = createMaterialDataBase()
             d.materialType = 'ISOTROPIC';

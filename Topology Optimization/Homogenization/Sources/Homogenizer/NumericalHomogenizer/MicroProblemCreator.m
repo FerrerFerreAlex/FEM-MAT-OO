@@ -3,21 +3,17 @@ classdef MicroProblemCreator < handle
     properties (Access = public)
         microProblem
         density
-        elemDensCr
-        eDensCreatType   
+        elemDensCreator
         matValues        
     end
     
     properties (Access = private)
         fileName
-        pdim        
-        
+        pdim               
         settings
-        
         materialProperties
         interpolation
-    end
-    
+    end    
     
     methods (Access = public)
         
@@ -39,9 +35,9 @@ classdef MicroProblemCreator < handle
     methods (Access = private)
         
         function init(obj,cParams)
-            obj.fileName                   = cParams.fileName;
-            obj.pdim                       = cParams.pdim;    
-            obj.settings                   = cParams.settings;
+            obj.fileName = cParams.fileName;
+            obj.pdim     = cParams.pdim;    
+            obj.settings = cParams.settings;
         end
         
         function buildMicroProblem(obj)
@@ -64,7 +60,7 @@ classdef MicroProblemCreator < handle
             cParams.type = obj.settings.elementDensityCreator;
             edc     = ElementalDensityCreator.create(cParams);
             edc.createDensity();
-            obj.elemDensCr = edc;
+            obj.elemDensCreator = edc;
         end
         
         function d = createElementalDensityCreatorSettings(obj)
@@ -75,7 +71,7 @@ classdef MicroProblemCreator < handle
         end
         
         function obtainDensity(obj)
-            obj.density = obj.elemDensCr.getDensity();
+            obj.density = obj.elemDensCreator.getDensity();
         end
         
         function createMaterialProperties(obj)
