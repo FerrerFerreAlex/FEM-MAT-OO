@@ -27,6 +27,7 @@ classdef ShFunc_StressNormInCell < ShFunWithElasticPdes
         function setPnorm(obj,p)
             obj.pNorm = p;
         end
+        
         function computeCostAndGradient(obj,x)
             obj.updateMaterialProperties(x);
             obj.solvePDEs();
@@ -110,8 +111,7 @@ classdef ShFunc_StressNormInCell < ShFunWithElasticPdes
             dV    = physProb.element.geometry.dvolu;
             stress = obj.physProb.variables.stress;
             value = obj.integratePNormOfL2Norm(stress,ngaus,nstre,dV,V);
-        end
-        
+        end        
         
         function v = integratePNormOfL2Norm(obj,stress,ngaus,nstre,dV,V)
             p = obj.pNorm;

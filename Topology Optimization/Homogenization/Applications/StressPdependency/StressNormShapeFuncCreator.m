@@ -27,7 +27,7 @@ classdef StressNormShapeFuncCreator < handle
         end
         
         function createStressShape(obj)
-            dB = obj.stressShapeDB();
+            dB = obj.stressShapeDB;
             sF = ShFunc_StressNorm(dB);
             sF.filter.preProcess();
             obj.stressShape = sF;

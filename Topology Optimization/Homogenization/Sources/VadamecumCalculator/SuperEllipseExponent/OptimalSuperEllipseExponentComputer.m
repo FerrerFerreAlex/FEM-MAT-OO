@@ -6,6 +6,8 @@ classdef OptimalSuperEllipseExponentComputer < handle
         qV
         fileName
         outPutDir
+        microProblem
+        volume
     end
     
     
@@ -16,6 +18,8 @@ classdef OptimalSuperEllipseExponentComputer < handle
             obj.generateMesh();
             obj.createSwanInputData();
             obj.createMicroProblem();
+            obj.computeVolume();
+            obj.computeStressNorm();
         end
         
     end
@@ -69,20 +73,21 @@ classdef OptimalSuperEllipseExponentComputer < handle
             mS.settings.levelSet.type = 'full';           
             s = s.microProblemCreatorSettings;
             microCreator = MicroProblemCreator(s);
-            microCreator.create();                        
+            microCreator.create();                  
+            obj.microProblem = microCreator.microProblem;
+        end
+        
+        function computeVolume(obj)
+            dvolu = sum(obj.microProblem.geometry.dvolu);
+            obj.volume = sum(dvolu);
+        end
+        
+        function computeStressNorm(obj)
+           shFunc =  
+            
         end
                
     end
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     

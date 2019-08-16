@@ -55,8 +55,6 @@ classdef  StressNormVariationInCellProblem < handle
         end            
         
         function createStressShapeFunction(obj)
-            d.homog   = obj.homog;  
-            d.homogDB = obj.homogDataBase;
             d.outFile = obj.outFile;
             sNormCreator = StressNormShapeFuncCreator(d);
             obj.stressNormFun = sNormCreator.getStressNormShape();
