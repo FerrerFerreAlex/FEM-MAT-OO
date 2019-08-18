@@ -9,10 +9,11 @@ classdef ShFunc_StressNormInCell < ShFunWithElasticPdes
     
     methods (Access = public)
         
-        function obj = ShFunc_StressNormInCell(settings)
-            obj@ShFunWithElasticPdes(settings);
-            obj.createEquilibriumProblem(settings.filename);
-            obj.stressHomog = settings.stressHomog;
+        function obj = ShFunc_StressNormInCell(cParams)
+            cParams.filterParams.quadratureOrder = 'LINEAR';
+            obj.init(cParams);
+            obj.createEquilibriumProblem(cParams.filename);
+            obj.stressHomog = cParams.stressHomog;
         end
         
         function v = getValue(obj)
@@ -21,37 +22,39 @@ classdef ShFunc_StressNormInCell < ShFunWithElasticPdes
         
         function setVstrain(obj,s)
             sV(1,:) = s;
-            obj.physProb.element.setVstrain(sV);
+            obj.physicalProblem.element.setVstrain(sV);
         end
         
         function setPnorm(obj,p)
             obj.pNorm = p;
         end
         
-        function computeCostAndGradient(obj,x)
-            obj.updateMaterialProperties(x);
+        function computeCostAndGradient(obj)
+            obj.nVariables = obj.designVariable.nVariables;            
+            obj.updateHomogenizedMaterialProperties();
             obj.solvePDEs();
             obj.computeFunctionValue();
             obj.computeGradient();
         end
         
         function c = computeCostWithFullDomain(obj)
-            nnodes = size(obj.physProb.mesh.coord,1);
-            x = -ones(nnodes,1);
-            obj.computeCostAndGradient(x);
+            nnodes = size(obj.physicalProblem.mesh.coord,1);            
+            obj.designVariable.value = -ones(nnodes,1);
+            obj.computeCostAndGradient();
             c = obj.value;
         end
         
         function s = computeMaxStressWithFullDomain(obj)
-            nnodes = size(obj.physProb.mesh.coord,1);
-            x = -ones(nnodes,1);
-            obj.updateMaterialProperties(x);
-            obj.solveCellProblem();
-            stress = obj.physProb.variables.stress;
-            ngaus = obj.physProb.element.quadrature.ngaus;            
-            nstre = obj.physProb.element.getNstre();
-            V = sum(sum(obj.physProb.geometry.dvolu));
-            dV = obj.physProb.element.geometry.dvolu;            
+            obj.nVariables = obj.designVariable.nVariables;                        
+            nnodes = size(obj.physicalProblem.mesh.coord,1);            
+            obj.designVariable.value = -ones(nnodes,1);
+            obj.updateHomogenizedMaterialProperties();
+            obj.solvePDEs();
+            stress = obj.physicalProblem.variables.stress;
+            ngaus = obj.physicalProblem.element.quadrature.ngaus;
+            nstre = obj.physicalProblem.element.getNstre();
+            V = sum(sum(obj.physicalProblem.geometry.dvolu));
+            dV = obj.physicalProblem.element.geometry.dvolu;
             s = obj.obtainMaxSigmaNorm(stress,ngaus,nstre,dV,V);
         end
         
@@ -62,20 +65,26 @@ classdef ShFunc_StressNormInCell < ShFunWithElasticPdes
         function updateGradient(obj)
         end
         
+        
+        function updateHomogenizedMaterialProperties(obj)
+            obj.filterDesignVariable();
+            obj.homogenizedVariablesComputer.computeCtensor(obj.regDesignVariable);
+        end
+        
         function computeGradient(obj)
             obj.gradient = 0;
         end
         
         function solvePDEs(obj)
-           obj.computeHomogenizedTensor();
-           obj.computeHomogenizedStrain();            
-           obj.solveCellProblem(); 
+            obj.computeHomogenizedTensor();
+            obj.computeHomogenizedStrain();
+            obj.solveCellProblem();
         end
         
         function computeFunctionValue(obj)
-            stress       = obj.physProb.variables.stress;
-            stress_fluct = obj.physProb.variables.stress_fluct;
-            v = obj.integrateStressNorm(obj.physProb);
+            stress       = obj.physicalProblem.variables.stress;
+            stress_fluct = obj.physicalProblem.variables.stress_fluct;
+            v = obj.integrateStressNorm(obj.physicalProblem);
             obj.value = v;
         end
         
@@ -84,34 +93,35 @@ classdef ShFunc_StressNormInCell < ShFunWithElasticPdes
     methods (Access = private)
         
         function solveCellProblem(obj)
-            cellProblem = obj.physProb;
+            cellProblem = obj.physicalProblem;
             sH(1,:) = obj.strainHomog;
-            cellProblem.element.setVstrain(sH);            
-            cellProblem.setMatProps(obj.matProps);
+            cellProblem.element.setVstrain(sH);
+            cellProblem.setC(obj.homogenizedVariablesComputer.C)
             cellProblem.computeVariables();
         end
         
         function computeHomogenizedTensor(obj)
-            cellProblem = obj.physProb;
+            cellProblem = obj.physicalProblem;
+            cellProblem.setC(obj.homogenizedVariablesComputer.C)
             Ch = cellProblem.computeChomog();
             obj.Chomog = Ch;
         end
         
         function computeHomogenizedStrain(obj)
-             Ch = obj.Chomog;
-             stress = obj.stressHomog;
-             strain = Ch\stress;
-             obj.strainHomog = strain;
+            Ch = obj.Chomog;
+            stress = obj.stressHomog;
+            strain = Ch\stress;
+            obj.strainHomog = strain;
         end
         
-        function value = integrateStressNorm(obj,physProb)
-            nstre = physProb.element.getNstre();
-            V = sum(sum(physProb.geometry.dvolu));
-            ngaus = physProb.element.quadrature.ngaus;
-            dV    = physProb.element.geometry.dvolu;
-            stress = obj.physProb.variables.stress;
+        function value = integrateStressNorm(obj,physicalProblem)
+            nstre = physicalProblem.element.getNstre();
+            V = sum(sum(physicalProblem.geometry.dvolu));
+            ngaus = physicalProblem.element.quadrature.ngaus;
+            dV    = physicalProblem.element.geometry.dvolu;
+            stress = obj.physicalProblem.variables.stress;
             value = obj.integratePNormOfL2Norm(stress,ngaus,nstre,dV,V);
-        end        
+        end
         
         function v = integratePNormOfL2Norm(obj,stress,ngaus,nstre,dV,V)
             p = obj.pNorm;
@@ -141,7 +151,7 @@ classdef ShFunc_StressNormInCell < ShFunWithElasticPdes
                     s = s + Sistre;
                 end
                 v = max([sqrt(s);v]);
-            end            
+            end
             
         end
         

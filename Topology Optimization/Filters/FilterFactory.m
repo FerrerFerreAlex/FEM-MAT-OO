@@ -1,19 +1,18 @@
 classdef FilterFactory < handle
     
-    methods (Access = public)
+    methods (Access = public, Static)
         
-        function filter = create(obj,factoryParams)
-            cParams = factoryParams;
-            switch factoryParams.filterType
+        function filter = create(cParams)
+            switch cParams.filterType
                 case 'P1'
-                    switch factoryParams.designVar.type                                                
+                    switch cParams.designVar.type                                                
                         case {'Density','MicroParams'}
                             filter = Filter_P1_Density(cParams);
                         case 'LevelSet'
                             filter = Filter_P1_LevelSet(cParams);
                     end
                 case 'PDE'
-                    switch factoryParams.designVar.type
+                    switch cParams.designVar.type
                         case {'Density','MicroParams'}
                             filter = Filter_PDE_Density(cParams);
                         case 'LevelSet'

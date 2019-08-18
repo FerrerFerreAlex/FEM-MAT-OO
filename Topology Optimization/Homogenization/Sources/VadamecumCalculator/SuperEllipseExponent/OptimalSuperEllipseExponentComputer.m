@@ -1,94 +1,114 @@
 classdef OptimalSuperEllipseExponentComputer < handle
     
     properties (Access = private)
-        mxV
-        myV
-        qV
-        fileName
-        outPutDir
-        microProblem
+        maxStress
         volume
+        parameters
+        lambda
+        qMeanOpt
     end
-    
     
     methods (Access = public)
         
         function obj = OptimalSuperEllipseExponentComputer()
-            obj.init();
-            obj.generateMesh();
-            obj.createSwanInputData();
-            obj.createMicroProblem();
-            obj.computeVolume();
-            obj.computeStressNorm();
+            obj.init()
+            obj.loadMaxStressAndVolumeData();
+            obj.computeMeanOptimalExponent();
+            obj.plot();
         end
         
     end
-    
     
     methods (Access = private)
         
         function init(obj)
-            obj.mxV = 0.5;
-            obj.myV = 0.5;
-            obj.qV  = 4;
-            obj.fileName  = 'SmoothRectangle';
-            obj.outPutDir = fullfile('Output',obj.fileName);            
+             obj.loadMaxStressAndVolumeData();
+             obj.lambda = 100;
         end
         
-        function generateMesh(obj)
-            s.freeFemSettings  = obj.computeFreeFemSettings();
-            s.fileName         = obj.fileName;    
-            inputFileGenerator = InputFemFileGeneratorFromFreeFem(s); 
-            inputFileGenerator.generate();
+        function loadMaxStressAndVolumeData(obj)
+            path = 'Topology Optimization/Vademecums';
+            file = 'SuperEllipseMaxStressVolume.mat';
+            fileFull = fullfile(path,file);
+            d = load(fileFull);
+            obj.maxStress = d.data.maxStress;
+            obj.volume    = d.data.volume;
+            obj.parameters = d.data.parameters;
         end
         
-        function s = computeFreeFemSettings(obj)
-            s = SettingsFreeFemMeshGenerator();
-            s.mxV             = obj.mxV;
-            s.myV             = obj.myV;
-            s.qNorm           = obj.qV;
-            s.freeFemFileName = obj.fileName;                                
+        function computeMeanOptimalExponent(obj)
+            p = obj.parameters;
+            for imx = 1:p.mx.n
+                for imy = 1:p.my.n
+                    obj.updateLoopIndex(imx,imy);
+                    obj.obtainMeanOptimalExponent();
+                end
+            end
         end
         
-        function createSwanInputData(obj)
-            outPutFileName   = obj.outPutDir;
-            s.gmsFile        = obj.createGmsFile();
-            s.outPutDir      = outPutFileName;
-            s.outPutFileName = fullfile(outPutFileName,[obj.fileName,'.m']);
-            c = GmsFile2SwanFileConverter(s);
-            c.convert();
+        function updateLoopIndex(obj,imx,imy)
+            obj.parameters.mx.imx = imx;
+            obj.parameters.my.imy = imy;
         end
         
-        function n = createGmsFile(obj)
-            fN  = obj.fileName;
-            dir = fullfile(pwd,obj.outPutDir);
-            n = [fullfile(dir,fN),'.msh'];
+        function obtainMeanOptimalExponent(obj)
+            p    = obj.parameters;
+            imx  = p.mx.imx;
+            imy  = p.my.imy;
+            qOpt = obj.obtainOptimalExponentsForAllPhi();
+            obj.qMeanOpt(imx,imy) = mean(qOpt);            
+        end        
+        
+        function q = obtainOptimalExponentsForAllPhi(obj)
+            p = obj.parameters;
+            q = zeros(p.phi.n,1);
+            for iphi = 1:p.phi.n
+                obj.updateIphi(iphi);
+                q = obj.obtainExponentWithMinCostFunction();
+            end            
+        end
+                
+        function updateIphi(obj,iphi)
+           obj.parameters.phi.iphi = iphi; 
         end
         
-        function createMicroProblem(obj)
-            numHomogSettings = NumericalHomogenizerDataBase([obj.fileName,'.m']);
-            s = numHomogSettings.dataBase;
-            s.outFileName = obj.fileName;
-            mS = s.microProblemCreatorSettings;
-            mS.settings.levelSet.type = 'full';           
-            s = s.microProblemCreatorSettings;
-            microCreator = MicroProblemCreator(s);
-            microCreator.create();                  
-            obj.microProblem = microCreator.microProblem;
+        function qOpt = obtainExponentWithMinCostFunction(obj)
+            q = obj.parameters.q.values;
+            c = obj.obtainCostFunction();
+            [~,imin] = min(c);
+            qOpt = q(imin); 
         end
         
-        function computeVolume(obj)
-            dvolu = sum(obj.microProblem.geometry.dvolu);
-            obj.volume = sum(dvolu);
+        function c = obtainCostFunction(obj)
+            s = obj.obtainMaxStress();
+            v = obj.obtainVolume();
+            l = obj.lambda;
+            c = s + l*v;            
         end
         
-        function computeStressNorm(obj)
-           shFunc =  
-            
+        function s = obtainMaxStress(obj)
+            p    = obj.parameters;
+            imx  = p.mx.imx;
+            imy  = p.my.imy;
+            iphi = p.phi.iphi;
+            s    = obj.maxStress(imx,imy,:,iphi);
+            s    = squeeze(s);
         end
-               
+        
+        function v = obtainVolume(obj)
+            p = obj.parameters;
+            imx = p.mx.imx;
+            imy = p.my.imy;
+            v   = obj.volume(imx,imy,:);
+        end
+        
+        function plot(obj)
+            mx = obj.parameters.mx.values;
+            my = obj.parameters.my.values;
+            q  = obj.qMeanOpt;
+            surf(mx,my,q');            
+        end
+        
     end
-    
-    
     
 end

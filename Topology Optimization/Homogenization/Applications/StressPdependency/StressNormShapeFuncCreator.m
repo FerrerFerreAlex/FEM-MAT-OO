@@ -4,6 +4,7 @@ classdef StressNormShapeFuncCreator < handle
         outFile
         stressShape
         stressShapeDB
+        phi
     end
     
     methods (Access = public)
@@ -24,27 +25,71 @@ classdef StressNormShapeFuncCreator < handle
         
         function init(obj,d)
             obj.outFile       = d.outFile;
+            obj.phi = d.phi;
         end
         
         function createStressShape(obj)
             dB = obj.stressShapeDB;
-            sF = ShFunc_StressNorm(dB);
+            sF = ShFunc_StressNormInCell(dB);
             sF.filter.preProcess();
             obj.stressShape = sF;
         end
         
         function createStressShapeDataBase(obj)
-            dB.filename    = obj.outFile;            
-            dB.TOL         = obj.createMaterialProperties();
-            dB.material    = 'ISOTROPIC';
-            dB.method      = 'SIMPALL';
-            dB.pdim        = '2D';
-            dB.stressHomog = [1,0,0]';
-            dB.filter      = 'P1';
-            dB.optimizer   = 'SLERP';
-            dB.pdim        = '2D';
-            dB.scale       = 'MICRO';
-            obj.stressShapeDB = dB;
+            
+            fullFileName = fullfile(obj.outFile,'SmoothRectangle');
+            
+            phiV = obj.phi;
+            
+            s.filename    = fullFileName;
+            s.TOL         = obj.createMaterialProperties();
+            s.material    = 'ISOTROPIC';
+            s.method      = 'SIMPALL';
+            s.pdim        = '2D';
+            s.stressHomog = [cos(phiV),sin(phiV),0]';
+            s.optimizer   = 'SLERP';
+            s.pdim        = '2D';
+            
+            
+            
+            femReader = FemInputReader_GiD();
+            sM = femReader.read(fullFileName);
+            
+            mesh = Mesh_Total(sM);
+            
+            sdV = SettingsDesignVariable();
+            sdV.scalarProductSettings.femSettings.fileName = fullFileName;
+            sdV.scalarProductSettings.scale = 'MICRO';
+            sdV.scalarProductSettings.epsilon = 0.1;
+            sdV.type = 'Density';
+            sdV.mesh = mesh;
+            designVariable = DesignVariable.create(sdV);
+            s.designVariable = designVariable;            
+            s.targetParameters = [];
+            
+            
+                        %s.mesh = mesh;
+            shV = SettingsHomogenizedVarComputerFromInterpolation();
+            shV.targetSettings = [];
+            shV.targetParams = [];
+            shV.designVariable = designVariable;
+            s.homogVarComputer = HomogenizedVarComputer.create(shV);
+            
+            
+            
+            
+            
+            s.filterParams.filterType = 'P1';
+            s.filterParams.designVar.type = 'Density';
+            s.filterParams.designVar.mesh = mesh;
+            s.filterParams.femSettings.scale = 'MICRO';
+            s.filterParams.femSettings.fileName = fullfile(fullFileName);
+            
+            
+            %s.femSettings.mesh = mesh;
+            s.femSettings.scale = 'MICRO';
+            s.femSettings.fileName = fullfile(fullFileName);
+            obj.stressShapeDB = s;
         end
     end
     

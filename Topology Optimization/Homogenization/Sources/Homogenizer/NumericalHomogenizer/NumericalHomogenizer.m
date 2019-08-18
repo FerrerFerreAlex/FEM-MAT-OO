@@ -145,7 +145,8 @@ classdef NumericalHomogenizer < handle
         end
         
         function createPrintersNames(obj)
-            type = obj.microProblemCreatorSettings.eDensCreatType;
+            %type = obj.microProblemCreatorSettings.eDensCreatType;
+            type = 'ElementalDensityCreatorByLevelSetCreator';
             f = ElementalDensityCreatorFactory();
             obj.printers = f.createPrinters(type);
             obj.printers{end+1} = 'HomogenizedTensor';
@@ -153,19 +154,19 @@ classdef NumericalHomogenizer < handle
         end
         
         function createPostProcess(obj)
-            dB = obj.createPostProcessDataBase();
-            dB.printers = obj.printers;
+            s = obj.createPostProcessDataBase();
+            s.printers = obj.printers;
             postCase = 'NumericalHomogenizer';
-            obj.postProcess = Postprocess(postCase,dB);
+            obj.postProcess = Postprocess(postCase,s);
         end
         
-        function dB = createPostProcessDataBase(obj)
-            dI.mesh            = obj.microProblemCreator.microProblem.mesh;
-            dI.outName         = obj.outputName;
-            dI.pdim            = obj.pdim;
-            dI.ptype           = 'MICRO';
-            ps = PostProcessDataBaseCreator(dI);
-            dB = ps.getValue();
+        function cParams = createPostProcessDataBase(obj)
+            s.mesh            = obj.microProblemCreator.microProblem.mesh;
+            s.outName         = obj.outputName;
+            s.pdim            = obj.pdim;
+            s.ptype           = 'MICRO';
+            ps = PostProcessDataBaseCreator(s);
+            cParams = ps.getValue();
         end
         
         function captureImage(obj)
