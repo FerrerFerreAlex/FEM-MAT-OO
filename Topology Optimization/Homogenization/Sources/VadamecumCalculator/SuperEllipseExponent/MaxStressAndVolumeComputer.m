@@ -16,6 +16,11 @@ classdef MaxStressAndVolumeComputer < handle
         hasToPrint
         printers
         postProcess
+        
+        savedFileName
+        
+        firstImx
+        hasComputationStarted
     end
     
     
@@ -31,31 +36,55 @@ classdef MaxStressAndVolumeComputer < handle
     methods (Access = private)
         
         function init(obj)
-            obj.createParameters();
-            obj.initMaxStressAndVolume();
             obj.fileName  = 'SmoothRectangle';
-            obj.outPutDir = fullfile('Output',obj.fileName);
+            obj.outPutDir = fullfile('Output',obj.fileName); 
+            obj.hasComputationStarted = true;            
+            obj.createSavedFileName();
+            obj.initMaxStressAndVolume();
             obj.hasToPrint = false;
         end
         
+        function createSavedFileName(obj)
+            path = 'Topology Optimization/Vademecums';
+            file = 'SuperEllipseMaxStressVolumeMesh2.mat';
+            fileFull = fullfile(path,file);            
+            obj.savedFileName = fileFull;
+        end        
+        
         function createParameters(obj)
-            s.mx.values = [0.01,0.99,5];
-            s.my.values = [0.01,0.99,5];
+            s.mx.values = [0.01,0.99,10];
+            s.my.values = [0.01,0.99,10];
             s.phi.values = [0,pi/2,7];
-            s.q.values = [1,4,10];
+            s.q.values = [1,4,20];
             s.q.expo   = 2;
             p = ParametersVademecumCreator(s);
             obj.parameters = p.params;
         end
         
         function initMaxStressAndVolume(obj)
-            p = obj.parameters;
-            nMx  = p.mx.n;
-            nMy  = p.my.n;
-            nQ   = p.q.n;
-            nPhi = p.phi.n;
-            obj.maxStress = zeros(nMx,nMy,nQ,nPhi);
-            obj.volume    = zeros(nMx,nMy,nQ);
+            if obj.hasComputationStarted
+                s =  load(obj.savedFileName);
+                obj.maxStress = s.data.maxStress;
+                obj.volume   = s.data.volume;
+                obj.parameters = s.data.parameters;
+                obj.firstImx = obj.computeFirstImxWhenSomeComputationDone();
+            else
+                obj.createParameters();                
+                p = obj.parameters;
+                nMx  = p.mx.n;
+                nMy  = p.my.n;
+                nQ   = p.q.n;
+                nPhi = p.phi.n;
+                obj.maxStress = zeros(nMx,nMy,nQ,nPhi);
+                obj.volume    = zeros(nMx,nMy,nQ);                
+                obj.firstImx = 1;
+            end
+        end
+        
+        function imx0 = computeFirstImxWhenSomeComputationDone(obj)
+            stresses = obj.maxStress(:,end,end,end);
+            lastComputedStress = find(stresses ~= 0,1,'last');
+            imx0 = lastComputedStress + 1;
         end
         
         function computeSuperEllipseMaxStressAndVolume(obj)
@@ -63,7 +92,7 @@ classdef MaxStressAndVolumeComputer < handle
             nMx  = p.mx.n;
             nMy  = p.my.n;
             nQ   = p.q.n;
-            for imx = 1:nMx
+            for imx = obj.firstImx:nMx
                 for imy = 1:nMy
                     for iq = 1:nQ
                         obj.updateLoopIndex(imx,imy,iq);
@@ -92,15 +121,12 @@ classdef MaxStressAndVolumeComputer < handle
         end
         
         function saveData(obj)
-            path = 'Topology Optimization/Vademecums';
-            file = 'SuperEllipseMaxStressVolume.mat';
-            fileFull = fullfile(path,file);
             data.maxStress = obj.maxStress;
             data.volume = obj.volume;
             data.parameters = obj.parameters;
-            save(fileFull,'data');
+            save(obj.savedFileName,'data');
         end
-        
+                
         function updateLoopIndex(obj,imx,imy,iq)
             obj.index.imx = imx;
             obj.index.imy = imy;
