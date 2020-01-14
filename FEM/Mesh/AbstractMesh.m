@@ -5,7 +5,7 @@ classdef AbstractMesh < handle
     end
     
     
-    properties (GetAccess = public, SetAccess = protected)
+    properties (GetAccess = public, SetAccess = public)
         coord
         connec
         
