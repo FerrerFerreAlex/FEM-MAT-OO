@@ -46,7 +46,7 @@ classdef Element_Elastic < Element
                             obj = Element_Elastic_3D(mesh,geometry,material,dof,problemData);
                     end
             end            
-            obj.createPrincipalDirection(problemData.pdim);
+%             obj.createPrincipalDirection(problemData.pdim);
         end
     end
 
@@ -199,9 +199,9 @@ classdef Element_Elastic < Element
             variables.strain = obj.computeStrain(variables.d_u,obj.dof.in_elem{1});
             variables.stress = obj.computeStress(variables.strain,obj.material.C,obj.quadrature.ngaus,obj.nstre);
             variables = obj.permuteStressStrain(variables);
-            [dir,s] = obj.computePrincipalStressDirection(variables.stress);
-            variables.principalDirections = dir;
-            variables.principalStress     = s;
+%             [dir,s] = obj.computePrincipalStressDirection(variables.stress);
+%             variables.principalDirections = dir;
+%             variables.principalStress     = s;
         end
         
         
@@ -216,9 +216,9 @@ classdef Element_Elastic < Element
         end
         
         function [dir,str] = computePrincipalStressDirection(obj,tensor)
-            obj.principalDirectionComputer.compute(tensor);            
-            dir = obj.principalDirectionComputer.direction;
-            str = obj.principalDirectionComputer.principalStress;
+%             obj.principalDirectionComputer.compute(tensor);            
+%             dir = obj.principalDirectionComputer.direction;
+%             str = obj.principalDirectionComputer.principalStress;
         end            
         
     end

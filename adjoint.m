@@ -6,50 +6,55 @@ addpath(genpath(fileparts(mfilename('fullpath'))))
 % run('test_fem.m')
 %% Main.m
 
-diff=1;
-epsilon=1e-6;
-file_name='CantileverToy_Triangular';
-% file_name='cantilever_beam_LINEAR';
-% file_name='adjoint_test';
+diff=1e10;
+epsilon=1e-9;
+% file_name='CantileverToy_Triangular';
+% % file_name='cantilever_beam_LINEAR';
+file_name='cantilever_test';
 obj=solvePhysProblem(file_name);
 coord_old=obj.mesh.coord;
-while diff > 1e-6
-    nnodes=size(obj.mesh.coord,1);
-    ndim=size(obj.mesh.coord,2);
 
-    dfdu=zeros(nnodes*ndim,1);
-    dfdu(obj.dof.neumann)=1;
-    dfdu(obj.dof.neumann+1)=1;
+nnodes=size(obj.mesh.coord,1);
+ndim=size(obj.mesh.coord,2);
 
-    lambda=zeros(nnodes*ndim,1);
-    lambda(obj.dof.free{1})=-obj.element.K(obj.dof.free{1},obj.dof.free{1})'\dfdu(obj.dof.free{1});
-    dfdx_dof=lambda'*computeAdjointGradient(obj,epsilon,obj.dof.dirichlet{1},file_name);
-  
-    for i_node=1:nnodes
-        for i_dim=1:ndim
-            gradient_adjoint(i_node,i_dim)=dfdx_dof(ndim*(i_node-1)+i_dim);
-        end
+dfdu=zeros(nnodes*ndim,1);
+dfdu(obj.dof.neumann)=1;
+tic
+lambda=zeros(nnodes*ndim,1);
+lambda(obj.dof.free{1})=-obj.element.K(obj.dof.free{1},obj.dof.free{1})'\dfdu(obj.dof.free{1});
+dfdx_dof=lambda'*computeAdjointGradient(obj,epsilon,obj.dof.dirichlet{1},file_name);
+toc
+for i_node=1:nnodes
+    for i_dim=1:ndim
+        gradient_adjoint(i_node,i_dim)=dfdx_dof(ndim*(i_node-1)+i_dim);
     end
-    gradient=computeNumericalGradient(obj,epsilon,obj.dof.dirichlet{1},file_name);
-    error_gradient=norm(gradient-gradient_adjoint)/norm(gradient);
-    l2_error=(norm(gradient)-norm(gradient_adjoint))/norm(gradient);
-    fprintf('Gradient error %f \nL-2 error %f \n',error_gradient,l2_error);
-    
-    obj=Elastic_Problem(file_name);
-    obj.mesh.coord=coord_old+1e-6*gradient_adjoint;
-    coord_old=obj.mesh.coord;
-    obj.preProcess;
-    matProps = struct;
-    matProps.mu=1/3;
-    matProps.kappa=1;
-    obj.setMatProps(matProps)
-    obj.computeVariables;
+end
+tic
+gradient=computeNumericalGradient(obj,epsilon,obj.dof.dirichlet{1},file_name);
+toc
+error_gradient=norm(gradient-gradient_adjoint)/norm(gradient);
+l2_error=(norm(gradient)-norm(gradient_adjoint))/norm(gradient);
+fprintf('Gradient error %f \nL-2 error %f \n',error_gradient,l2_error);
+
+obj=Elastic_Problem(file_name);
+obj.mesh.coord=coord_old+1e-6*gradient_adjoint;
+coord_old=obj.mesh.coord;
+obj.preProcess;
+matProps = struct;
+matProps.mu=1/3;
+matProps.kappa=1;
+obj.setMatProps(matProps)
+obj.computeVariables;
+obj.print('cantilever_test');
 %     obj.print;
 %     plot_geometry(obj.mesh.coord,obj.mesh.connec);
-    diff=norm(dfdx_dof);
-    f_obj=obj.variables.d_u(obj.dof.neumann)+obj.variables.d_u(obj.dof.neumann+1);
-    fprintf('Obj. func: %f, grad: %f \n \n',f_obj,diff);
-end
+diff=norm(dfdx_dof);
+f_obj=sum(obj.variables.d_u(obj.dof.neumann));
+fprintf('Obj. func: %f, grad: %f \n \n',f_obj,diff);
+
+
+
+
 function plot_geometry(coord,connec)
 figure(1)
 clf
@@ -113,7 +118,7 @@ end
 function gradient=computeNumericalGradient(physProblem,epsilon,dirichlet_nodes,file_name)
     nnodes=size(physProblem.mesh.coord,1);
     ndim=size(physProblem.mesh.coord,2);
-    f_initial=physProblem.variables.d_u(physProblem.dof.neumann)+physProblem.variables.d_u(physProblem.dof.neumann+1);%
+    f_initial=sum(physProblem.variables.d_u(physProblem.dof.neumann));
     gradient=zeros(nnodes,ndim);
     for i_node=1:nnodes
         for i_dim=1:ndim
@@ -128,7 +133,7 @@ function gradient=computeNumericalGradient(physProblem,epsilon,dirichlet_nodes,f
                 matProps.kappa=1;
                 adjointProblem.setMatProps(matProps);
                 adjointProblem.computeVariables;
-                gradient(i_node,i_dim)=(f_initial-adjointProblem.variables.d_u(physProblem.dof.neumann)-adjointProblem.variables.d_u(physProblem.dof.neumann+1))/epsilon;%
+                gradient(i_node,i_dim)=(f_initial-sum(adjointProblem.variables.d_u(physProblem.dof.neumann)))/epsilon;%
             else
                 gradient(i_node,i_dim)=0;
             end

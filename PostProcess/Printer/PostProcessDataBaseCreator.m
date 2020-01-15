@@ -14,10 +14,10 @@ classdef PostProcessDataBaseCreator < handle
             d.nnode = size(mesh.connec,2);
             d.npnod = size(mesh.coord,1);
             d.gtype = mesh.geometryType;
-            d.pdim  = dI.pdim;
+            d.pdim  = mesh.ndim;
             d.nelem = size(mesh.connec,1);
-            d.ptype = dI.ptype;
-            d.ndim  = obj.computeNdim(d.pdim);
+%             d.ptype = dI.ptype;
+            d.ndim  = mesh.ndim;
             d.etype = obj.computeGiDElementType(d.gtype);
             obj.data = d;
         end
